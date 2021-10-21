@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Facture {{ bill.number }}{% endblock %}
+{% block url %}{{ path('admin.bills_show', {'id' : bill.id }) }}{% endblock %}
+
+{% block body %}
+<div class="row flex mt-4 mb-4">
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>Numéro</th>
+                <td>{{ bill.number }}</td>
+            </tr>
+            <tr>
+                <th>Ajouté le</th>
+                <td>{{ bill.createdAt ? bill.createdAt|date('d-m-Y H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Image facture</th>
+                <td>
+                    {% if bill.billPdfname is not null %}
+                        {% if 'pdf' in bill.billPdfname %}
+                            <object data="{{ asset('pdf/bills/' ~ bill.billPdfname ) }}" type="application/pdf" width="100%" height="1200px;">
+                            </object>
+                        {% else %}
+                            <img src="{{ asset('pdf/bills/' ~ bill.billPdfname ) }}" width="80%" height="1200px;"/>
+                        {% endif %}
+                    {% else %}
+                        Aucune image trouvée!
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('admin.bills_index') }}" class="btn btn-success mr-3">Retourner</a>
+
+    <a href="{{ path('admin.bills_edit', {'id': bill.id}) }}" class="btn btn-primary mr-3">Modifier</a>
+
+    {{ include('bills/_delete_form.html.twig') }}
+
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+{% block title %}Liste des fournisseurs{% endblock %}
+{% block url %}{{ path('admin.provider_index') }}{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+
+{% block body %}
+    <div class="row flex mt-4 mb-4">
+        <a class="btn btn-primary" href="{{ path('admin.provider_new') }}">Ajouter un fournisseur</a>
+    </div>
+
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Téléphone</th>
+                <th>Adresse</th>
+                <th>Description</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for provider in providers %}
+            <tr>
+                <td>{{ provider.name }}</td>
+                <td>{{ provider.phone }}</td>
+                <td>{{ provider.adresse }}</td>
+                <td>{{ provider.description }}</td>
+                <td>
+                    <a href="{{ path('admin.provider_show', {'id': provider.id}) }}" class="mr-4"><i class="far fa-eye"></i></a>
+                    <a href="{{ path('admin.provider_edit', {'id': provider.id}) }}"><i class="fas fa-pencil-alt"></i></a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">0 article trouvé</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready( function () {
+            $('#table').DataTable({
+                "pagingType": "full_numbers"
+            });
+        } );
+    </script>
+{% endblock %}
+

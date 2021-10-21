@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Commandes{% endblock %}
+{% block url %}{{ path('admin.command_index') }}{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+
+{% block body %}
+    {% if app.request.query.has('success_creation') %}
+        <div class="alert alert-success row flex mt-4 mb-4">
+            Commande a été crée avec succès !
+        </div>
+    {% endif %}
+    <div class="row flex mt-4 mb-4">
+        <a class="btn btn-primary" href="{{ path('command_new') }}">Vendre des produits</a>
+    </div>
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>Vendu le</th>
+                <th>Produits</th>
+                <th>Commentaire</th>
+                <th class="text-center">Prix total(Dinard)</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for command in commands %}
+            {% set totalCommand = 0 %}
+            <tr>
+                <td>{{ command.createdAt ? command.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    {% for product in command.products %}
+                        {% if product.promo is defined and product.promo is not empty and product.promo != 0 %}
+                            {% set productPrice = product.price - (product.price * product.promo)/100 %}
+                        {% else %}
+                            {% set productPrice = product.price %}
+                        {% endif %}
+                        {% set totalCommand = totalCommand + productPrice * product.howMany %}
+
+                        <a href="{{ path('admin.product_show',{'id': product.id }) }}">{{ product.name }}</a> - {{ product.howMany }} article(s) | Prix unitaire ttc: {{ product.price }}dt
+                        {% if product.promo is defined and product.promo is not empty and product.promo != 0 %} | Promo: {{ product.promo }}% | Prix après promo: {{ product.price - (product.price * product.promo /100)  }}dt {% endif %}
+                        <br>
+                    {% endfor %}
+                </td>
+                <td>{{ command.comment|length > 75 ? command.comment|slice(0, 75) ~ '...' : command.comment }}</td>
+                <td class="text-center">{{ totalCommand }}</td>
+                <td><a href="{{ path('admin.generate_novice',{'id': command.id })}}" target="_blank"><span class="status-p bg-primary">Générer facture</span></a></td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">Aucune commande enregistrée dans le système</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready( function () {
+            $('#table').DataTable({
+                "pagingType": "full_numbers"
+            });
+            //clearUrlFromParams()
+        } );
+    </script>
+{% endblock %}

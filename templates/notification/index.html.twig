@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notifications{% endblock %}
+{% block url %}{{ path('admin.notification_index') }}{% endblock %}
+
+{% block body %}
+    <form action="{{ path('admin.notification_all_open') }}" method="get">
+        <button type="submit" class="btn btn-primary">Tout marquer comme lu</button>
+    </form>
+    <div class="row container ml-lg-5">
+    {% for notification in notifications %}
+        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <a href="{{ path('admin.notification_show',{'id' : notification.id }) }}">
+                <div class="alert alert-{% if notification.isOpen %}dark{% else %}danger{% endif %}" role="alert">
+                    <h4 class="alert-heading">
+                        {% if notification.type == 'product' %}
+                            {{ notification.concern.name }}
+                        {% endif %}
+                    </h4>
+                    <p>
+                        {% if notification.type == 'product' %}
+                            {% if notification.regardingType == 'qty' %}
+                                Le nombre d'article est <span style="font-weight:bold;">{{ notification.concern.howMany }}</span>
+                            {% else %}
+                                {% if date(notification.concern.expirationDate) > date() %}
+                                    La date de péremption (<span style="font-weight:bold;">{{ notification.concern.expirationDate |date('d-m-Y') }}</span>) est dans les 3 prochains mois.
+                                {% else %}
+                                    <span style="color:red;">La date de péremption (<span style="font-weight:bold;">{{ notification.concern.expirationDate |date('d-m-Y') }}</span>) est déjà passé.</span>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </p>
+                    <br>
+                    <p style="font-size:13px;font-weight:bold;">{{ notification.createdAt |date('d M Y H:i:s') }}</p>
+                </div>
+                </a>
+        </div>
+    {% endfor %}
+    {% if notifications is empty %}
+        <div class="col-md-6">
+            <h5>0 notification</h5>
+        </div>
+    {% endif %}
+    </div>
+{% endblock %}

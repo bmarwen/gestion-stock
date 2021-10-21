@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des clients{% endblock %}
+{% block url %}{{ path('admin.client_index') }}{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+
+{% block body %}
+    <div class="row flex mt-4 mb-4">
+        <a class="btn btn-primary" href="{{ path('admin.client_new') }}">Ajouter un client</a>
+    </div>
+
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>Firstname</th>
+                <th>Lastname</th>
+                <th>Phone</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for client in clients %}
+            <tr>
+                <td>{{ client.firstname }}</td>
+                <td>{{ client.lastname }}</td>
+                <td>{{ client.phone }}</td>
+                <td>
+                    <a href="{{ path('admin.client_show', {'id': client.id}) }}" class="mr-4"><i class="far fa-eye"></i></a>
+                    <a href="{{ path('admin.client_edit', {'id': client.id}) }}"><i class="fas fa-pencil-alt"></i></a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">0 article trouvé</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready( function () {
+            $('#table').DataTable({
+                "pagingType": "full_numbers"
+            });
+        } );
+    </script>
+{% endblock %}
+

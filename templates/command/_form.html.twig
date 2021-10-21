@@ -1,0 +1,11 @@
+{{ form_start(form) }}
+    <div class="form-group">
+        <label class="products">Liste des produits</label>
+        <select id="command_products" class="form-control" >
+        </select>
+        <a href="" class="btn mt-2" id="addProductBtn">Ajouter &nbsp;<i class="ti-shopping-cart"></i></a>
+    </div>
+    {{ form_row(form.client) }}
+    {{ form_row(form.comment) }}
+    <span id="commentCount">0</span> / 500
+{{ form_end(form) }}

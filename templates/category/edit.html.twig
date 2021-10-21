@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier catégorie{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-6">
+            {{ include('category/_form.html.twig', {'button_label': 'Modifier'}) }}
+        </div>
+    </div>
+    <div class="row mt-5 container">
+        <a href="{{ path('admin.category_index') }}" class="btn btn-success mr-3">Retourner</a>
+        {{ include('category/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

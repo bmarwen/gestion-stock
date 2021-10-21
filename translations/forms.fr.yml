@@ -1,0 +1,17 @@
+Name: Nom
+Price: Prix
+Description: Déscription
+How many: Nombre
+Category: Catégorie
+Provider: Fournisseur
+code: Code facture
+Mark: Marque
+Purchace price un ht: Prix d'achat Uni HT (Dinard)
+Tva: TVA %
+Gain: Marge %
+Image file: Image produit
+Comment: Commentaire sur la vente (max 500 caractères)
+Expiration date: Date de péremption
+Number: Numéro
+Bill: Facture
+Bill pdf file: Image facture(pdf,png,jpeg)

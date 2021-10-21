@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Produit{% endblock %}
+
+{% block body %}
+    Prix affiché TTC(dinard): <h1>{{ product.price | round(1,'floor') }}</h1>
+    <br><br>
+        <div class="row">
+            <div class="col-md-8">
+                {{ include('product/_form.html.twig', {'button_label': 'Modifier'}) }}
+            </div>
+        </div>
+
+
+    <div class="row mt-5 container">
+        <a href="{{ path('admin.product_index') }}" class="btn btn-success mr-3">Retourner</a>
+        {{ include('product/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

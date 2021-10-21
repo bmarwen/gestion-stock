@@ -1,0 +1,45 @@
+.smallImage{
+    height: 90px;
+    width:90px;
+}
+
+.bigImage{
+    height: 385px;
+    width: 385px;
+}
+
+.trash-icon{
+    color:red;
+    font-weight: bold;
+    font-size:24px;
+}
+
+.hidden{
+    display: none;
+}
+
+.totalCommand{
+    font-size:25px;font-weight:bold;
+}
+
+.redCounter{
+    color:red;
+    font-weight: bold;
+    font-size: 15px;
+}
+#addProductBtn{
+    font-weight: bold;
+    font-size:19px;
+}
+
+.loginBtn{
+    color:white;
+    font-size:18px;
+}
+select{
+    height:43px !important;
+}
+
+.logoMenu{
+    color: #2ecc71;
+}

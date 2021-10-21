@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('./web/images/icon/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ asset('./web/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('./web/css/themify-icons.css') }}">
+    <!-- amchart css -->
+    <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
+    <!-- others css -->
+    <link rel="stylesheet" href="{{ asset('./web/css/styles.css') }}">
+    <!-- modernizr css -->
+    <script src="{{ asset('./web/js/vendor/modernizr-2.8.3.min.js') }}"></script>
+</head>
+<body>
+{% block body %}{% endblock %}
+<!-- bootstrap 4 js -->
+<script src="{{ asset('./web/js/popper.min.js') }}"></script>
+<script src="{{ asset('./web/js/bootstrap.min.js') }}"></script>
+<!-- jquery latest version -->
+<script src="{{ asset('./web/js/vendor/jquery-2.2.4.min.js') }}"></script>
+</body>
+</html>

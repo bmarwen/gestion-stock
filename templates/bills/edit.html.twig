@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Bills{% endblock %}
+
+{% block body %}
+    <br><br>
+    <div class="row">
+        <div class="col-md-6">
+            {{ include('bills/_form.html.twig', {'button_label': 'Modifier'}) }}
+        </div>
+    </div>
+
+
+    <div class="row mt-5 container">
+        <a href="{{ path('admin.bills_index') }}" class="btn btn-success mr-3">Retourner</a>
+        {{ include('bills/_delete_form.html.twig') }}
+    </div>
+
+
+{% endblock %}

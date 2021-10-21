@@ -1,0 +1,25 @@
+{{ form_start(form) }}
+<div class="row">
+    <div class="col-md-6">
+        {{ form_row(form.code) }}
+
+        {{ form_row(form.howMany) }}
+        {{ form_row(form.category) }}
+        {{ form_row(form.provider) }}
+        {{ form_row(form.tva) }}
+        {{ form_row(form.gain) }}
+        {{ form_row(form.imageFile) }}
+        {{ form_row(form.expirationDate) }}
+
+    </div>
+    <div class="col-md-6">
+        {{ form_row(form.name) }}
+        {{ form_row(form.description) }}
+        {{ form_row(form.mark) }}
+        {{ form_row(form.purchacePriceUnHt) }}
+        {{ form_row(form.bill) }}
+    </div>
+</div>
+<br><br>
+    <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}

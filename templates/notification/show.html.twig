@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notification{% endblock %}
+{% block url %}{{ path('admin.notification_show', {'id' : notification.id }) }}{% endblock %}
+
+{% block body %}
+<div class="row flex mt-4 mb-4 container">
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>Ajouté le</th>
+                <td>{{ notification.createdAt ? notification.createdAt|date('d M Y H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>A propos</th>
+                <td>
+                    {% if notification.regardingType == 'qte' %}
+                        La quantité {{ notification.concern.howMany }}
+                    {% else %}
+                        La date de péremption {{ notification.concern.expirationDate |date('d/m/Y') }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Information sur l'article  <a href="{{ path('admin.product_show',{'id': product.id }) }}">{{ product.name }}</a></th>
+                <td>
+                    {% if notification.type == 'product' %}
+                        Fournisseur : {{ product.provider.name }} <br>Tél: {{ product.provider.phone }} <br>Adresse: {{ product.provider.adresse }}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+    <a href="{{ path('admin.notification_index') }}" class="btn btn-primary">Retourner</a>
+{% endblock %}

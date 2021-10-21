@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Client {{ client.name }}{% endblock %}
+{% block url %}{{ path('admin.client_show', {'id' : client.id }) }}{% endblock %}
+
+{% block body %}
+<div class="row flex mt-4 mb-4">
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>Firstname</th>
+                <td>{{ client.firstname }}</td>
+            </tr>
+            <tr>
+                <th>Lastname</th>
+                <td>{{ client.lastname }}</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>{{ client.phone }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+    <a href="{{ path('admin.client_index') }}" class="btn btn-success mr-3">Retourner</a>
+
+    <a href="{{ path('admin.client_edit', {'id': client.id}) }}" class="btn btn-primary mr-3">Modifier</a>
+    <br><br>
+    {{ include('client/_delete_form.html.twig') }}
+{% endblock %}

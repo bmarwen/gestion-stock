@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Produit {{ product.name }}{% endblock %}
+{% block url %}{{ path('admin.product_show', {'id' : product.id }) }}{% endblock %}
+
+{% block body %}
+    <div class="row flex mt-4 mb-4">
+        <table class="table table-striped">
+            <tbody>
+            <tr>
+                <th>Code</th>
+                <td>{{ product.code }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ product.name }}</td>
+            </tr>
+            <tr>
+                <th>Prix (Dinard)</th>
+                <td>{{ product.price }}0</td>
+            </tr>
+            <tr>
+                <th>Prix unitaire hors taxe (Dinard)</th>
+                <td>{{ product.purchacePriceUnHt }}</td>
+            </tr>
+            <tr>
+                <th>TVA %</th>
+                <td>{{ product.tva }}%</td>
+            </tr>
+            <tr>
+                <th>Marge %</th>
+                <td>{{ product.gain }}</td>
+            </tr>
+            <tr>
+                <th>Ajouté le</th>
+                <td>{{ product.createdAt ? product.createdAt|date('d-m-Y') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Date de péremption</th>
+                <td>{{ product.expirationDate ? product.expirationDate|date('d-m-Y') : '--' }}</td>
+            </tr>
+            <tr>
+                <th>Déscription</th>
+                <td>{{ product.description }}</td>
+            </tr>
+            <tr>
+                <th>Fournisseur</th>
+                <td>{{ product.provider }}</td>
+            </tr>
+            <tr>
+                <th>Numéro facture</th>
+                <td>{% if product.bill is not null %}{{ product.bill.number }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Marque</th>
+                <td>{{ product.mark }}</td>
+            </tr>
+            <tr>
+                <th>Nombre</th>
+                <td>{{ product.howMany }}</td>
+            </tr>
+            <tr>
+                <th>Image</th>
+                <td>
+                    {% if product.filename is not null  %}
+                        <img src="{{ asset('images/products/' ~ product.filename) }}" class="bigImage">
+                    {% else %}
+                        <img src="{{ asset('images/noProductPicture.png') }}" class="bigImage">
+                    {% endif %}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a href="{{ path('admin.product_index') }}" class="btn btn-success mr-3">Retourner</a>
+
+        <a href="{{ path('admin.product_edit', {'id': product.id}) }}" class="btn btn-primary mr-3">Modifier</a>
+
+        {{ include('product/_delete_form.html.twig') }}
+    </div>
+
+
+{% endblock %}

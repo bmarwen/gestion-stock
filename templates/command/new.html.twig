@@ -1,0 +1,449 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle commande{% endblock %}
+{% block url %}{{ path('command_new') }}{% endblock %}
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .priceRemise{
+            color:red;
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-5">
+        <h1>Création d'une commande</h1>
+        <br>
+        {% if app.request.get('success_creation') %}
+            <div class="alert alert-success">Commande créée avec succès!</div>
+        {% endif %}
+        {{ include('command/_form.html.twig') }}
+    </div>
+    <div class="col-md-2"></div>
+    <div class="col-md-5">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Panier</h2><br>
+                <table class="table text-center table-striped" id="tBasket">
+                    <thead class="text-uppercase bg-dark">
+                    <tr class="text-white">
+                        <th scope="col">Nom</th>
+                        <th scope="col">Prix Un HT</th>
+                        <th scope="col">TVA %</th>
+                        <th scope="col">Prix TTC(dinard)</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Remise %</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tBodyBasket">
+                    </tbody>
+                </table>
+                <h3 id="emptyBasket" class="text-center">Panier vide!</h3>
+                <br>
+                <!--div class="row hidden" style="margin-left:-13px;"  id="remiseSection">
+                    <div class="col-md-2" >
+                        <div class="form-group">
+                            <label for="remise" style="font-weight:bold;">Remise</label>
+                            <input type="text" minlength="0" maxlength="100"  class="form-control" id="remise">
+                        </div>
+                    </div>
+                    <div class="col-md-2" style="margin-left:-9px;margin-top:28px;">
+                        <button type="button" class="btn btn-flat btn-outline-success" id="applyRemise">Appliquer</button>
+                        <button type="button" class="btn btn-flat btn-outline-danger hidden" id="cancelRemise">Annuler</button>
+                    </div>
+                </div-->
+            </div>
+
+            <div class="col-md-12 mt-5">
+                <hr>
+                <span class="totalCommand">Total TTC</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:red;font-size:20px;font-weight:bold;" id="alertRemiseApplied">  </span> <h1><span id="totalBasketPrice">0</span> DNT </h1><br>
+                <button id="validateBasket" class="btn btn-primary btn-xl mb-3"><span class="font-weight-bold">{{ button_label|default('Valider') }}</span></button>
+                <button id="emptyBasketBtn" class="btn btn-warning btn-xl mb-3"><span class="font-weight-bold">{{ button_label|default('Annuler') }}</span></button>
+            </div>
+
+        </div>
+    </div>
+</div>
+    <br><br>
+    <a href="{{ path('admin.command_index') }}" class="btn btn-success">Retourner</a>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        const heightOfSelect = '600px';
+        let productsInBasketsSize = 0;
+        let clientUrl = '/api/clients/';
+        let howManyProducts = [];
+        let remiseApplied = false;
+        $(document).ready(function() {
+            //clearUrlFromParams()
+            let selectProducts = $('#command_products')
+            let selectClients = $('#command_client')
+            let addProductBtn =  $('#addProductBtn')
+            let validateBasketBtn = $('#validateBasket')
+            let emptyBasketBtn = $('#emptyBasketBtn')
+            emptyBasketBtn.addClass("hidden")
+            let commentTextArea = document.getElementById('command_comment');
+            //let remiseBtn = document.getElementById('remise');
+            //let applyRemise = document.getElementById('applyRemise');
+            //let cancelRemise = document.getElementById('cancelRemise');
+            //applyRemise.addEventListener('click',applyRemiseToTotal);
+            //cancelRemise.addEventListener('click',cancelRemiseToTotal);
+            //let remiseBtn = document.getElementById('remise');
+            commentTextArea.addEventListener('keyup', updateCommentTextAreaCount);
+            validateBasketBtn.prop('disabled', true);
+            handlingSelectClients(selectClients)
+            handlingSelectProducts(selectProducts)
+            addProductBtn.on('click',addProductToBasket)
+            validateBasketBtn.on('click',submitBasket)
+            getProductData()
+            document.getElementById('emptyBasketBtn').addEventListener('click',cancelBasketBtn);
+            document.getElementById('tBasket').addEventListener('DOMSubtreeModified',basketRefreshWhenAction.bind(this,validateBasketBtn,emptyBasketBtn))
+        });
+        const getProductData = () => {
+            let selectProducts = $('#command_products')
+            let productUrl = 'products'
+            let params = '?howMany[gte]=1&pagination=false' // products which exist in the stock howMany != 0
+            sendHttpRequest('get', urlApi + productUrl + params)
+                .then(products => {
+                    products['hydra:member'].forEach(product => {
+                        selectProducts.append(new Option(product.code,product.id))
+                        let lastOptionAdded = $('#command_products option:last-child');
+                        lastOptionAdded.attr('data-name',product.name);
+                        lastOptionAdded.attr('data-price',Math.ceil(product.price * 10) /10);
+                        lastOptionAdded.attr('data-price-un-ht',Math.ceil(product.purchacePriceUnHt * 10) /10);
+                        lastOptionAdded.attr('data-tva',product.tva);
+                        lastOptionAdded.attr('data-maxnb',product.howMany);
+                        howManyProducts.push({
+                            'howMany': product.howMany,
+                            'productId': product.id
+                        })
+                    })
+                }).catch(err => {
+                console.log(err.message)
+            })
+            selectProducts.prepend("<option value='' ></option>");
+        }
+
+        function addProductToBasket(e){
+            e.preventDefault();
+            let tBodyBasket = document.getElementById("tBodyBasket");
+            let optionSelected = $('#command_products option:selected');
+            let valOptionSelected = optionSelected.val();
+
+            let productsRows = $('#tBodyBasket').find('tr');
+            var nbProducts = 1;
+
+            if(optionSelected.val() === '')return
+            //loop through tr to find if we already saved this product
+            for(let i=0;i<productsRows.length;i++){
+                let productRow = productsRows[i];
+                let id = productRow.dataset.id;
+                if(id === valOptionSelected){
+                    let tdNbProducts = $('#tr-product-' + id + ' td:nth-child(5)');
+                    //update Old number in the basket by +1 but we need to check if we have that element in the store
+                    let maxNbProduct = parseInt(optionSelected.data('maxnb'));
+                    let oldNbProducts = parseInt(tdNbProducts.text());
+                    nbProducts = oldNbProducts + 1;
+                    if(nbProducts <= maxNbProduct){
+                        tdNbProducts.html(nbProducts);
+                    }else{
+                        alert('Vous ne pouvez plus ajouté d\'article car vous avez atteint le nombre maximal disponible dans le stock !');
+                    }
+                }
+            }
+
+            if(nbProducts === 1){
+                let row = tBodyBasket.insertRow(0);
+                let nameData = optionSelected.attr('data-name');
+                let priceOptionSelected = optionSelected.attr('data-price');
+                let priceUnHt = optionSelected.attr('data-price-un-ht');
+                let tva = optionSelected.attr('data-tva');
+                let priceunittc = Math.ceil(priceOptionSelected * 10) / 10;
+                row.id = 'tr-product-' + valOptionSelected;
+                row.dataset.id = valOptionSelected;
+                row.dataset.pricettc = priceunittc;
+                let cellName = row.insertCell(0);
+                cellName.innerText = nameData;
+                let cellPriceUnHt = row.insertCell(1);
+                cellPriceUnHt.innerText = priceUnHt;
+                let cellTva = row.insertCell(2);
+                cellTva.innerText = tva;
+                let cellPrice = row.insertCell(3);
+                cellPrice.innerText = priceunittc;
+                let cellNumber = row.insertCell(4);
+                cellNumber.innerText = nbProducts;
+                cellNumber.className = 'number';
+                let remiseAction = row.insertCell(5);
+                let remiseInput = createRemiseInput(valOptionSelected);
+                remiseAction.append(remiseInput);
+                let cellAction = row.insertCell(6);
+                let iconDeleteBtn = createDeleteBtn(row.id);
+                cellAction.append(iconDeleteBtn);
+                productsInBasketsSize++;
+            }
+        }
+
+
+        function deleteProductFromBasket(rowId){
+            $('#' + rowId).remove();
+        }
+
+        function handlingSelectClients(selectClients){
+            selectClients.select2()
+            selectClients.css("max-height",heightOfSelect)
+            selectClients.prepend(new Option("Inconnu",-1,true,true));
+        }
+
+        function handlingSelectProducts(selectProducts){
+            selectProducts.select2()
+            selectProducts.css("max-height",heightOfSelect)
+        }
+
+        /**
+         * @returns HTMLElement
+         */
+        function createDeleteBtn(rowId){
+            let iconDeleteBtn = document.createElement('i')
+            iconDeleteBtn.classList.add('ti-trash');
+            iconDeleteBtn.classList.add('trash-icon');
+            iconDeleteBtn.addEventListener('click',deleteProductFromBasket.bind(this,rowId));
+            return iconDeleteBtn;
+        }
+        /**
+         * @return HTMLElement
+         */
+        function createRemiseInput(rowId){
+            let remiseRowId = "remise-" + rowId ;
+            let remiseInput = document.createElement('input')
+            remiseInput.classList.add('form-control')
+            remiseInput.setAttribute('id',remiseRowId)
+            remiseInput.setAttribute('data-rowid',rowId)
+            remiseInput.setAttribute('type','text')
+            remiseInput.setAttribute('minlength','0')
+            remiseInput.setAttribute('maxlength','100')
+            remiseInput.setAttribute('style','width:60px;')
+            remiseInput.addEventListener('keyup',calculatePriceProductAfterRemise);
+            remiseInput.addEventListener('keyup',remiseMinAndMax);
+
+            return remiseInput;
+        }
+
+        function calculatePriceProductAfterRemise(e){
+            let remiseInput = e.srcElement;
+            let valueRemise = remiseInput.value;
+            let rowId = remiseInput.dataset.rowid;
+            let elementTdPriceTtc = $("#tr-product-" + rowId + " td:nth-child(4)" );
+            let elementTrPrice = $("#tr-product-" + rowId ).data('pricettc');
+
+            if(valueRemise === undefined || valueRemise === 0 || valueRemise === "") {
+                elementTdPriceTtc.html(elementTrPrice);
+                elementTdPriceTtc.removeClass('priceRemise')
+                return
+            }else if(valueRemise > 100){
+                elementTdPriceTtc.html(0);
+                elementTdPriceTtc.removeClass('priceRemise')
+                return
+            }
+            let intPriceTtc = parseFloat(elementTrPrice);
+            let newPriceAfterRemise = intPriceTtc - (intPriceTtc * parseInt(valueRemise) / 100);
+            elementTdPriceTtc.html(Math.ceil(newPriceAfterRemise * 10) / 10)
+            elementTdPriceTtc.addClass('priceRemise')
+        }
+
+        function updateTotalCommand(totalCommand){
+            $('#totalBasketPrice').text(Math.ceil(totalCommand * 10) / 10);
+        }
+
+        /**
+         * @returns {number}
+         */
+        function calculatePriceCommand(){
+            let productsRows = $('#tBodyBasket').find('tr');
+            let commandTotal = 0;
+            //loop through tr
+            for(let i=0;i<productsRows.length;i++) {
+                let productRow = productsRows[i];
+                let id = productRow.dataset.id;
+                let tdNbProducts = $('#tr-product-' + id + ' td:nth-child(5)');
+                let tdPrice = $('#tr-product-' + id + ' td:nth-child(4)');
+                let nbProduct = parseInt(tdNbProducts.text());
+                let price = parseFloat(tdPrice.text());
+                commandTotal += nbProduct * price;
+            }
+            return commandTotal;
+        }
+
+
+
+        function submitBasket(){
+            if(!validateFormDataComment()){
+                alert('Erreur dans la commande: commentaire!')
+                return;
+            }
+            if(!confirm('Etês vous sûr ?')) return;
+            let commentText = $('#command_comment').val();
+            let promo = null;
+            let remiseElm = document.getElementById('remise');
+            if(remiseApplied){
+                promo = parseInt(remiseElm.value);
+            }
+            let data = {'products': null, 'client': null, 'comment': commentText};
+            let selectClientVal = $('#command_client').val();
+
+            if(selectClientVal !== '-1'){ // known client
+                data['client'] = clientUrl + parseInt(selectClientVal);
+            }
+            let products = [];
+            //loop through tr
+            let productsRows = $('#tBodyBasket').find('tr');
+            for(let i=0;i<productsRows.length;i++) {
+                let productRow = productsRows[i];
+                let idProduct = productRow.dataset.id;
+                let tdNbProducts = $('#tr-product-' + idProduct + ' td:nth-child(5)');
+                let tdTva = $('#tr-product-' + idProduct + ' td:nth-child(3)');
+                let tdPriceHt = $('#tr-product-' + idProduct + ' td:nth-child(2)');
+                let selectProduct = $('#command_products option[value="' +  idProduct + '"]');
+                let nbProduct = parseInt(tdNbProducts.text());
+                let nameProduct = $('#tr-product-' + idProduct + ' td:nth-child(1)').text()
+                let promoProduct = $('#tr-product-' + idProduct + ' td:nth-child(6) input').val()
+                products.push({
+                    id: idProduct,
+                    howMany: nbProduct,
+                    name: nameProduct,
+                    tva: tdTva.text(),
+                    priceHt: tdPriceHt.text(),
+                    price: selectProduct.attr('data-price'),
+                    promo: promoProduct
+                });
+            }
+
+            data['products'] = products;
+            let commandUrl = 'commands'
+            sendHttpRequest('POST', urlApi + commandUrl,data)
+                .then(response => {
+                    updateStockProducts(response);
+                }).catch(err => {
+                console.log(err)
+            })
+        }
+
+
+        function updateStockProducts(data){
+            newHowManyProducts = {
+                'howMany': 0
+            }
+            data.products.forEach(product => {
+                let productUrl = 'products/';
+                let howManyOrig = getProductHowMany(product.id);
+                newHowManyProducts.howMany = parseInt(howManyOrig) - parseInt(product.howMany);
+                sendHttpRequest('PUT', urlApi + productUrl + product.id ,newHowManyProducts)
+                    .then(response => {
+                        {% if is_granted('ROLE_ADMIN') %}
+                            window.location.assign('{{ path('admin.command_index') }}?success_creation=true');
+                        {% else %}
+                            window.location.assign('{{ path('command_new') }}?success_creation=true');
+                        {% endif %}
+
+                    }).catch(err => {
+                    console.log(err)
+                })
+            })
+        }
+
+        function getProductHowMany(productId){
+            let result = -1;
+            howManyProducts.forEach(elem => {
+                if(parseInt(elem.productId) === parseInt(productId)){
+                    result = elem.howMany;
+                }
+            });
+            return result;
+        }
+
+        function cancelBasketBtn(){
+            $('#tBodyBasket').empty();
+        }
+
+        function basketRefreshWhenAction(validateBasketBtn,emptyBasketBtn){
+            let totalCommand = calculatePriceCommand();
+            let emptyBasket = $('#emptyBasket');
+            let remiseSection = $('#remiseSection');
+            updateTotalCommand(totalCommand);
+            if($('#tBasket tr').length <= 1){
+                emptyBasket.removeClass('hidden');
+                remiseSection.addClass('hidden');
+                validateBasketBtn.prop('disabled', true);
+                emptyBasketBtn.addClass("hidden")
+            }else{
+                emptyBasket.addClass('hidden');
+                remiseSection.removeClass('hidden');
+                validateBasketBtn.prop('disabled', false);
+                emptyBasketBtn.removeClass("hidden")
+            }
+        }
+
+        function validateFormDataComment(){
+            let commentText = $('#command_comment').val();
+            if(commentText.length > 500)return false;
+            return true;
+        }
+
+        function updateCommentTextAreaCount(e){
+            let commentTextArea = $(this);
+            let commentCounter = $('#commentCount');
+            let lengthCommenttext = commentTextArea.val().length;
+            commentCounter.text(lengthCommenttext);
+            if(lengthCommenttext>500){
+                commentCounter.prepend('Erreur: ');
+                commentCounter.addClass('redCounter');
+            }else{
+                commentCounter.removeClass('redCounter');
+            }
+        }
+
+        function remiseMinAndMax(e){
+            let remiseBtn = e.srcElement;
+            let valueRemise = remiseBtn.value;
+            if(valueRemise !== ''){
+                let valueRemise = parseInt(remiseBtn.value.replace(/\D.-/g,''));
+
+                if(valueRemise < 0){
+                    valueRemise = 0;
+                }else if(valueRemise > 100){
+                    valueRemise = 100;
+                }
+                if(isNaN(valueRemise)){
+                    valueRemise = '';
+                }
+                remiseBtn.value = valueRemise;
+            }
+        }
+        function applyRemiseToTotal(e){
+            let totalCommand = calculatePriceCommand();
+            let remiseElm = document.getElementById('remise');
+            totalCommand = totalCommand - (totalCommand * remiseElm.value) /100;
+            updateTotalCommand(totalCommand);
+            remiseApplied = true;
+            $('#applyRemise').addClass('hidden');
+            $('#cancelRemise').removeClass('hidden');
+            let alertRemiseApplied = $('#alertRemiseApplied');
+            alertRemiseApplied.removeClass('hidden');-20% remise
+            alertRemiseApplied.text(' ' + '-' + remiseElm.value + '% remise ');
+        }
+        function cancelRemiseToTotal(){
+            let totalCommand = calculatePriceCommand();
+            updateTotalCommand(totalCommand);
+            remiseApplied = false;
+            $('#applyRemise').removeClass('hidden');
+            $('#cancelRemise').addClass('hidden');
+            let alertRemiseApplied = $('#alertRemiseApplied');
+            alertRemiseApplied.addClass('hidden');
+            alertRemiseApplied.text('');
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+{% block title %}Liste des produits{% endblock %}
+{% block url %}{{ path('admin.product_index') }}{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+{% block body %}
+    <div class="row flex mt-4 mb-4">
+        <a class="btn btn-primary" href="{{ path('admin.product_new') }}">Ajouter un produit</a>
+    </div>
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Nom</th>
+                <th>Prix (dt)</th>
+                <th>Prix unitaire(dt)</th>
+                <th>Marge(%)</th>
+                <th>Tva(%)</th>
+                <th>Fournisseur</th>
+                <th>Marque</th>
+                <th>Numéro facture</th>
+                <th>Date de péremption</th>
+                <th>Nombre</th>
+                <th>Image</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for product in products %}
+            <tr>
+                <td>{{ product.code }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.price }}</td>
+                <td>{{ product.purchacePriceUnHt }}</td>
+                <td>{{ product.gain }}</td>
+                <td>{{ product.tva }}</td>
+                <td>{{ product.provider }}</td>
+                <td>{{ product.mark }}</td>
+                <td >{% if product.bill is not null %}<a href="{{ path('admin.bills_show',{'id': product.bill.id }) }}">{{ product.bill.number }}</a>{% endif %}</td>
+                <td>{{ product.expirationDate ? product.expirationDate|date('d-m-Y') : '--' }}</td>
+                <td>{{ product.howMany }}</td>
+                <td>
+                    {% if product.filename is not null  %}
+                        <img src="{{ asset('images/products/' ~ product.filename) }}" class="smallImage">
+                    {% else %}
+                        <img src="{{ asset('images/noProductPicture.png') }}" class="smallImage">
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ path('admin.product_show', {'id': product.id}) }}" class="mr-4"><i class="far fa-eye"></i></a>
+                    <a href="{{ path('admin.product_edit', {'id': product.id}) }}"><i class="fas fa-pencil-alt"></i></a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">0 produits trouvés</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                "pagingType": "full_numbers",
+                "order": [[ 1, "asc" ]]
+            });
+        } );
+    </script>
+{% endblock %}
