@@ -1,0 +1,5 @@
+<form method="post" action="{{ path('admin.application_delete', {'id': application.id}) }}" 
+onsubmit="return confirm('Don't try to delete this item please, unless you are so sure!');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ application.id) }}">
+    <button class="btn btn-danger">Supprimer</button>
+</form>

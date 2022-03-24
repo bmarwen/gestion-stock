@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle promotion{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-4">
+    <h1>Créer une promo</h1><br>
+
+    {{ include('promo/_form.html.twig') }}
+    <br>
+    <a href="{{ path('admin.promo_index') }}" class="btn btn-success">Retourner</a>
+    </div>
+</div>
+    
+{% endblock %}
+{% block javascripts %}
+<script>
+    $(document).ready(function() {
+        $('#promo_product').select2()
+    });
+</script>
+{% endblock %}

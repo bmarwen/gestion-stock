@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Données de l'application{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+{% block body %}
+<div class="row flex mt-4 mb-4">
+        <a class="btn btn-primary" href="{{ path('admin.application_new') }}">Ajouter une valeur</a>
+</div>
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>Ajouté le</th>
+                <th>Mise à jour le</th>
+                <th>Nom</th>
+                <th>Redirection vers</th>
+                <th>Valeur / Déscription</th>
+                <th>Type</th>
+                <th>Preview Image</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for application in applications %}
+            <tr>
+                <td>{{ application.createdAt ? application.createdAt|date('Y-m-d H:i') : '' }}</td>
+                <td>{{ application.updatedAt ? application.updatedAt|date('Y-m-d H:i') : '' }}</td>
+                <td>{{ application.name }}</td>
+                <td>{{ application.redirectTo }} <br><a target="_blank" href="{{ app.request.getBaseURL() ~ application.redirectTo}}">Vérifier la redirection</a></td>
+                <td>{{ application.value }}</td>
+                <td>{{ application.type }}</td>
+                <td>
+                    {% if application.filename is not null  %}
+                        <img src="{{ asset('images/application/' ~ application.filename) }}" class="smallImage">
+                    {% else %}
+                        <img src="{{ asset('images/noProductPicture.png') }}" class="smallImage">
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ path('admin.application_show', {'id': application.id}) }}" class="mr-4"><i class="far fa-eye"></i></a>
+                    <a href="{{ path('admin.application_edit', {'id': application.id}) }}"><i class="fas fa-pencil-alt"></i></a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">Pas de valeur enregistré</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                "pagingType": "full_numbers",
+                "order": [[ 1, "asc" ]]
+            });
+        } );
+    </script>
+{% endblock %}

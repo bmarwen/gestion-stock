@@ -1,0 +1,152 @@
+{% extends 'app/baseFront.html.twig' %}
+
+{% block title %}Catégories{% endblock %}
+{% block stylesheets %}
+{% endblock %}
+{% block body %}
+<br><br>
+ <!-- ...:::: Start Shop Section:::... -->
+    <div class="shop-section">
+        <div class="container">
+            <div class="row flex-column flex-lg-row">
+                 {% if productsPager is empty %}
+                        <center><h2 style="color:#2ecc71;">Cette catégorie est vide! </h2></center>
+                 {% endif %}
+                <div class="col-lg-3">
+                    <!-- Start Sidebar Area -->
+                    <div class="siderbar-section">
+                        <!-- Start Single Sidebar Widget -->
+                        {% if productsPager is not empty %}
+                            <div class="sidebar-single-widget">
+                                <form id="form_price_filter" method="GET" action="{{ path(app.request.attributes.get('_route'),
+        app.request.attributes.get('_route_params')) }}?page={{app.request.get('page')}}" >
+                                    <h6 class="sidebar-title">FILTRER PAR PRIX</h6>
+                                    <div class="sidebar-content">
+                                        <div id="slider-range"></div>
+                                        <div class="filter-type-price">
+                                            <label for="amount">Prix: </label>
+                                            <input type="text" name="amount" id="amount" style="position:relative;left:-40px;width:100%;">
+                                            <button type="submit" class="btn btn-primary">Filtrer</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div> <!-- End Single Sidebar Widget -->
+                        {% endif %}
+                    </div> <!-- End Sidebar Area -->
+                </div>
+                <div class="col-lg-9">
+                    <!-- Start Shop Product Sorting Section -->
+                    <div class="shop-sort-section">
+                        <div class="container">
+                            <div class="row">
+                               
+                                <!-- Start Sort Wrapper Box -->
+                                <div class="sort-box d-flex justify-content-between align-items-md-center align-items-start flex-md-row flex-column">
+                                    <!-- Start Sort tab Button -->
+                                    <div class="sort-tablist">
+                                        <ul class="tablist nav sort-tab-btn">
+                                            <li><a class="nav-link active" data-toggle="tab" href="#layout-3-grid"><img src="assets/images/icon/bkg_grid.png" alt=""></a></li>
+                                            <li><a class="nav-link" data-toggle="tab" href="#layout-list"><img src="assets/images/icon/bkg_list.png" alt=""></a></li>
+                                        </ul>
+                                    </div> <!-- End Sort tab Button -->
+                                    {% if productsPager is not empty %}
+                                        <div class="tab-pane sort-layout-single" id="layout-list">
+                                            {{ pagerfanta(productsPager) }}
+                                        </div>
+                                        <!-- Start Sort Select Option -->
+                                        <div class="sort-select-list" style="position:relative;left:0px;" >
+                                            <form action="#">
+                                                <fieldset>
+                                                    <select name="sort" id="sort">
+                                                        <option value="asc" {%if app.request.get('priceOrder') == 'asc' %}selected{%endif%}>Trier par prix: Croissant</option>
+                                                        <option value="desc" {%if app.request.get('priceOrder') == 'desc'%}selected{%endif%}>Trier par prix: Décroissant</option>
+                                                    </select>
+                                                </fieldset>
+                                            </form>
+                                        </div> <!-- End Sort Select Option -->
+                                    {% endif %}
+                                </div> <!-- Start Sort Wrapper Box -->
+                            </div>
+                        </div>
+                    </div> <!-- End Section Content -->
+
+                    <!-- Start Tab Wrapper -->
+                    <div class="sort-product-tab-wrapper">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="tab-content tab-animate-zoom">
+                                        <!-- Start Grid View Product -->
+                                        <div class="tab-pane active show sort-layout-single" id="layout-3-grid">
+                                            <div class="row">
+                                            {% for product in productsPager |filter(p => p.howMany > 0) %}
+                                                <div class="col-xl-4 col-sm-6 col-12">
+                                                    {% include 'app/default/includes/productShow.html.twig' %}
+                                                </div>
+                                            {% endfor %}     
+                                            </div>
+                                        </div> <!-- End Grid View Product -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <!-- End Tab Wrapper -->
+                    <br>
+                    {% if productsPager is not empty %}
+                        <div class="tab-pane active show sort-layout-single" id="layout-3-grid" style="margin-left:2%;" >
+                        {{ pagerfanta(productsPager) }}
+                        </div>
+                    {% endif %}
+                </div> <!-- End Shop Product Sorting Section  -->
+            </div>
+        </div>
+    </div> <!-- ...:::: End Shop Section:::... -->
+{% endblock %}
+{% block javascripts %}
+    <script>
+        /************************************************
+        * Price Slider
+        ***********************************************/
+        
+        $( "#slider-range" ).slider({
+            range: true,
+            min: {{priceRangeMin |round(0, 'floor') | number_format(0, '.', ',')}},
+            max: {{priceRangeMax |round(0, 'ceil') | number_format(0, '.', ',')}},
+            values: [ {{priceRangeMin |round(0, 'floor') | number_format(0, '.', ',')}}, {{priceRangeMax |round(0, 'ceil') | number_format(0, '.', ',')}} ],
+            slide: function( event, ui ) {
+                $( "#amount" ).val( ui.values[ 0 ] + " DT " + + ui.values[ 1 ] + " DT ");
+            }
+        });
+        $( "#amount" ).val($( "#slider-range" ).slider( "values", 0 ) + " DT " +
+            " - " + $( "#slider-range" ).slider( "values", 1 ) + " DT ");
+
+        $('#form_price_filter').submit(function(event){
+            let page = "?";
+            {% if app.request.get('page') %}
+                page = "?page={{app.request.get('page')}}&";
+            {% endif %}
+            event.preventDefault();
+            let newUrl = "{{ path(app.request.attributes.get('_route'),app.request.attributes.get('_route_params')) }}";
+            var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) ;
+            window.location = newLocation;
+        });
+
+        $('#sort').change(function(){
+            let page = "?";
+            {% if app.request.get('page') %}
+                page = "?page={{app.request.get('page')}}&";
+            {% endif %}
+            let newUrl = "{{ path(app.request.attributes.get('_route'),app.request.attributes.get('_route_params')) }}";
+            let priceOrder = $(this).val();
+            
+            if($(this).val() === 'asc'){
+                var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) + "&priceOrder="+priceOrder ;
+                window.location = newLocation;
+            }else{
+                var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) + "&priceOrder="+priceOrder;
+                window.location = newLocation;
+            }
+        });
+
+    </script>
+{% endblock %}

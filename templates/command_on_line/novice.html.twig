@@ -1,0 +1,123 @@
+<html>
+<head>
+    <link rel="stylesheet" href="{{ asset('./web/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('./web/css/themify-icons.css') }}">
+    <link rel="stylesheet" href="{{ asset('./web/css/style.css') }}">
+</head>
+<body>
+<div class="container mt-5" style="border:1px solid black;">
+    <div class="row mt-5">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-6" style="margin-left:-150px;">
+                    <h1>Para el jinene</h1>
+                </div>
+                <div class="col-md-5"></div>
+                <div class="col-md-1"><h2>Facture #{{"now"|date("Ym")}}{{ "%05d" |format(commandOnLine.id) }}</h2></div>
+            </div>
+        </div>
+    </div>
+    <img class="rounded-circle" src="{{ asset('images/logo.jpg') }}" style="height: 160px;margin-left:35px;"/>
+    <div class="row mt-5 mb-5" style="margin-left:25px;">
+        <div class="col-md-6">
+            <h5>Adresse {{ address }}</h5>
+            <h5>Code postal {{ zip_code }}</h5>
+            <h5>Téléphone {{ phone }}</h5>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-5" style="margin-left:25px;">
+        <div class="col-md-6">
+            <h5>Date {{ commandOnLine.createdAt |date('d/m/Y') }}</h5>
+            <h5>Client {{ commandOnLine.lastname|upper }} {{ commandOnLine.firstname }} </h5>
+        </div>
+    </div>
+    <div class="row mt-5 mb-5" style="margin-left:25px;margin-right:50px;">
+        <div class="col-md-12">
+            <table class="table table-bordered ">
+                <thead>
+                <tr style="text-align:center">
+                    <th>Quantité</th>
+                    <th>Désignation</th>
+                    <th>TVA %</th>
+                    <th>Prix Total TTC(dt)</th>
+                    <th>Promo</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for cmdDetail in commandOnLine.cmdDetails %}
+                        <tr style="text-align:center">
+                            <td>{{ cmdDetail.qty }}</td>
+                            <td>{{ cmdDetail.name }}</td>
+                            <td>{{ cmdDetail.tva }}</td>
+                            <td>
+                                {% if cmdDetail.hasPromo is defined %}
+                                    {% set currentPrice = cmdDetail.promo.price_after_promo %}
+                                {% else %}
+                                    {% set currentPrice = cmdDetail.price %}
+                                {% endif %}
+                                {{ currentPrice * cmdDetail.qty }}
+                            </td>
+                            <td>
+                            {% if cmdDetail.hasPromo is defined %}{{ cmdDetail.promo.percent }}%{% else %}-{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-8"></div>
+        <div class="col-md-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Frais de livraison (dt)</th>
+                        <th>
+                            {{ commandOnLine.shippingPrice }}
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>Total commande TTC (dt)</th>
+                        <th>
+                            {{ commandOnLine.totalCommand }}
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    <div class="row mt-5 mb-5" style="margin-left:25px;">
+        <div class="col-md-4">
+            <h5>Paiement à la livraison</h5>
+            <h5>Adresse: {{ commandOnLine.fullAddress }}</h5>
+        </div>
+    </div>
+    <div class="row mt-5 mb-5" style="margin-left:25px;">
+        <div class="col-md-4">
+            <h5>En votre aimable réglement,</h5>
+            <h5>Cordialement</h5>
+        </div>
+    </div>
+
+</div>
+<div class="row" style="margin-left:22%;">
+    <div class="col-md-4"></div>
+    <button id="print" class="btn btn-primary mt-5">Imprimer</button>
+</div>
+<!-- jquery latest version -->
+<script src="{{ asset('./web/js/vendor/jquery-2.2.4.min.js') }}"></script>
+<!-- bootstrap 4 js -->
+<script src="{{ asset('./web/js/popper.min.js') }}"></script>
+<script src="{{ asset('./web/js/bootstrap.min.js') }}"></script>
+<script>
+    $(document).ready( function () {
+       //$('#print').print(),
+        document.getElementById('print').addEventListener('click',function(){
+            $('#print').css('display','none');
+            window.print();
+            $('#print').css('display','inline-block');
+        })
+    } );
+</script>
+</body>
+</html>

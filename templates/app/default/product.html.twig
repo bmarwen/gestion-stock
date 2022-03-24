@@ -1,0 +1,63 @@
+{% extends 'app/baseFront.html.twig' %}
+
+{% block title %}Produit{% endblock %}
+
+{% block body %}
+<br><br>
+ <!-- Start Product Details Section -->
+    <div class="product-details-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="product-details-gallery-area">
+                        <div class="product-large-image product-large-image-horaizontal">
+                            <div class="product-image-large-single zoom-image-hover">
+                                    {% if product.filename is not null  %}
+                                        <img src="{{ asset('images/products/' ~ product.filename) }}" alt="" class="img-responsive" style="height:450px;width:100%;">
+                                    {% else %}
+                                        <img src="{{ asset('images/noProductPicture.png') }}" >
+                                    {% endif %}
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="product-details-content-area">
+                        <!-- Start  Product Details Text Area-->
+                        <div class="product-details-text">
+                            <h4 class="title">{{product.name}}</h4>
+                            <div class="price">{{product.price}} DT</div>
+                            <p>{% if product.description is null %}Pas de description.{% else %}{{product.description}}{% endif %}</p>
+                        </div> <!-- End  Product Details Text Area-->
+                        <!-- Start Product Variable Area -->
+                        <div class="product-details-variable">       
+                            <!-- Product Variable Single Item -->
+                            <div class="d-flex align-items-center">
+                                <div class="variable-single-item ">
+                                    <span>Quantité</span>
+                                    <div class="product-variable-quantity">
+                                        <input min="1" max="100" value="1" id="qty" type="number">
+                                    </div>
+                                </div>
+
+                                <div class="product-add-to-cart-btn">
+                                    <a href="{{path('basket_add',{'id' : product.id })}}" id="basket_add" >Ajouter au panier</a>
+                                </div>
+                            </div>
+                        </div> <!-- End Product Variable Area -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End Product Details Section -->
+{% endblock %}
+{% block javascripts %}
+    <script>
+       $('#basket_add').click(function(e){
+           e.preventDefault();
+           let qty = $('#qty').val();
+           window.location = "{{path('basket_add',{'id' : product.id })}}?qty=" + qty;
+       });
+    </script>
+{% endblock %}

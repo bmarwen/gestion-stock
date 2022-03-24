@@ -1,0 +1,178 @@
+{% extends 'app/baseFront.html.twig' %}
+
+{% block title %}Création d'une commande{% endblock %}
+
+{% block body %}
+<br><br>
+  <!-- ...:::: Start Checkout Section:::... -->
+    <div class="checkout_section">
+        <div class="container">
+        {% if not is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+            <div class="row">
+                <!-- User Quick Action Form -->  
+                <div class="col-12">
+                    <div class="user-actions accordion">
+                        <h3>
+                            <i class="fa fa-file-o" aria-hidden="true"></i>
+                            Pas de compte?
+                            <a class="Returning" href="{{path('login')}}" >Cliquer ici et créer un compte</a>.
+                        </h3>
+                    </div>
+                <!-- User Quick Action Form -->
+            </div>
+        {% endif %}
+            <!-- Start User Details Checkout Form -->
+            <div class="checkout_form">
+                <form action="{{path('checkout_new')}}" method="POST">
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6">
+                            <h3>Adresse</h3>
+                            <div class="row">
+                                <div class="col-lg-6 mb-20">
+                                    <div class="default-form-box">
+                                        <label>Prénom<span>*</span></label>
+                                        {{ form_widget(form.firstName) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.firstName) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-20">
+                                    <div class="default-form-box">
+                                        <label>Nom <span>*</span></label>
+                                        {{ form_widget(form.lastName) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.lastName) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-20">
+                                    <div class="default-form-box">
+                                        <label>Adresse <span>*</span></label>
+                                        {{ form_widget(form.address, {'attr': {'placeholder': 'numéro et nom de rue'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.address) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-20">
+                                    <div class="default-form-box">
+                                        {{ form_widget(form.addressComplement, {'attr': {'placeholder': 'numéro appartement (optionnel)'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.addressComplement) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-20">
+                                    <div class="default-form-box">
+                                        <label>Phone<span>*</span></label>
+                                        {{ form_widget(form.phone, {'attr': {'pattern': '[0-9]{8}'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.phone) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-20">
+                                    <div class="default-form-box">
+                                        <label> Email Address <span></span></label>
+                                        {{ form_widget(form.email, {'attr': {'pattern': '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.email) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="order-notes">
+                                        <label for="order_note">Plus de détails ?</label>
+                                        {{ form_widget(form.moreDetails, {'attr': {'placeholder': 'Vous pouvez renseigner plus de détails sur la livraison.'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.moreDetails) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                       
+                        </div>
+                            <div class="col-lg-6 col-md-6">
+                                <h3>Récapulatif</h3>
+                                {% set totalBasket = 0 %}
+                                <div class="order_table table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Produits</th>
+                                                <th>Totale</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {%for product in app.session.get('products') %}
+                                            {%if productsFromDb[product.id].currentPromo is not null%} {# IF PROMO #}
+                                                {% set currentPrice = productsFromDb[product.id].getPriceAfterPromotionIfExists %}     
+                                            {% else %}
+                                                {% set currentPrice = product.price %}     
+                                            {% endif %}
+                                            {% set totalBasket = totalBasket + currentPrice * product.qty %}
+                                            <tr>
+                                                <td><a href="{{path('product_show',{'id': product.id })}}" title="{{product.name}}"> {{product.name|length > 39 ? product.name|slice(0, 39) ~ '...' : product.name  }}</a> <strong> × {{product.qty}}</strong></td>
+                                                <td>
+                                                    <center style="margin-top:-9%;" >
+                                                        {%if productsFromDb[product.id].currentPromo is not null%}
+                                                            <span>
+                                                            <br><del class="product-default-price-off">{{product.price}}</del> 
+                                                            {{  currentPrice }} DT
+                                                            <span style="background-color:#EA2027;color:white;border-radius:15px;font-size:16px;font-weight:bold;padding:2px;">-{{productsFromDb[product.id].currentPromo.pourcent}}%</span>
+                                                        {%else%}
+                                                            <br>{{ product.price }} DT
+                                                        {%endif%}
+                                                    </center>
+                                                 </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Sous totale</th>
+                                                <td>{{totalBasket}} DT</td>
+                                            </tr>
+                                            <tr>
+                                                <th>livraison</th>
+                                                <td><strong>{%if totalBasket < freeShippingMinPrice.value %}{{shippingPrice.value}} DT{% else %}Gratuite{% endif %}</strong></td>
+                                            </tr>
+                                            <tr class="order_total">
+                                                <th>Totale</th>
+                                                <td><strong>{%if totalBasket < freeShippingMinPrice.value %}{{totalBasket + shippingPrice.value}}{% else %}{{totalBasket}}{% endif %} DT</strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                
+                                <div class="payment_method">
+                                    <div class="panel-default">
+                                            <span><b>Paiement à la livraison</b></span>         
+                                    </div>
+                                    <div class="order_button pt-15">
+                                        <button type="submit">Confirmer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <!-- Start User Details Checkout Form -->
+                    {{ form_rest(form) }}
+                    {{ form_end(form) }}
+                </form>
+        </div>
+    </div><!-- ...:::: End Checkout Section:::... -->
+{% endblock %}
+{% block javascripts %}
+    <script>
+        $( document ).ready(function() {
+            {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+                $('#command_on_line_firstName').val('{{app.user.firstname}}');
+                $('#command_on_line_lastName').val('{{app.user.lastname}}');
+                $('#command_on_line_address').val('{{app.user.address}}');
+                $('#command_on_line_phone').val('{{app.user.telephone}}');
+                $('#command_on_line_email').val('{{app.user.email}}');
+            {% endif %}
+        });
+    </script>
+{% endblock %}

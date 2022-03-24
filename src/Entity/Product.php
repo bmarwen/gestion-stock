@@ -7,6 +7,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
 use App\Repository\ProductRepository;
 use Cocur\Slugify\Slugify;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\HttpFoundation\File\File;
@@ -21,6 +23,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
  * @Vich\Uploadable()
  * @ApiResource(attributes={"pagination_items_per_page"=1000000})
  * @ApiFilter(RangeFilter::class, properties = {"howMany"})
+ * @ORM\HasLifecycleCallbacks
  */
 class Product
 {
@@ -145,11 +148,56 @@ class Product
      */
     private $bill;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Promo::class, mappedBy="product")
+     */
+    private $promos;
+
 
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->updatedAt = new \DateTime();
+        $this->promos = new ArrayCollection();
+    }
+
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
+    protected function getUploadRootDir()
+    {
+        // the absolute directory path where uploaded
+        // documents should be saved
+        return __DIR__.'/../../public/'.$this->getUploadDir();
+    }
+
+    protected function getUploadDir()
+    {
+        // get rid of the __DIR__ so it doesn't screw up
+        // when displaying uploaded doc/image in the view.
+        return 'images/products';
+    }
+
+    /**
+     * @ORM\PreUpdate
+     * @ORM\PreRemove
+     */
+    public function removeOldFileImage(): void
+    {
+        if($this->getAbsolutePath() != null){
+            if (file_exists($this->getAbsolutePath())) {
+                unlink($this->getAbsolutePath());
+            }
+        }
+    }
+
+    public function getAbsolutePath()
+    {
+        return null === $this->filename
+            ? null
+            : $this->getUploadRootDir().'/'.$this->filename;
     }
 
     public function getId(): ?int
@@ -379,6 +427,68 @@ class Product
     public function setBill(?Bills $bill): self
     {
         $this->bill = $bill;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getPriceAfterPromotionIfExists(){
+        if($promo = $this->getCurrentPromo()){
+            $newPrice = $this->getPrice() - $this->getPrice() * $promo->getPourcent() / 100;
+            return round($newPrice,2);
+        }
+        return null;
+    }
+
+    /**
+     * @return Promo|null
+     */
+    public function getCurrentPromo(){
+        $now = new \DateTime();
+        foreach($this->promos->getValues() as $promo){
+            if($promo->getIsEnabled() && $promo->getStartsAt() < $now && $promo->getExpiresAt() > $now){
+                return $promo;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return Collection|Promo[]
+     */
+    public function getPromos(): Collection
+    {
+        return $this->promos;
+    }
+
+
+    public function setPromos($promos)
+    {
+        $this->promos = $promos;
+        
+        return $this;
+    }
+
+    public function addPromo(Promo $promo): self
+    {
+        if (!$this->promos->contains($promo)) {
+            $this->promos[] = $promo;
+            $promo->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removePromo(Promo $promo): self
+    {
+        if ($this->promos->removeElement($promo)) {
+            // set the owning side to null (unless already changed)
+            if ($promo->getProduct() === $this) {
+                $promo->setProduct(null);
+            }
+        }
 
         return $this;
     }

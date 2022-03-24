@@ -16,6 +16,9 @@
             "./src/Entity/.gitignore"
         ]
     },
+    "babdev/pagerfanta-bundle": {
+        "version": "v2.9.0"
+    },
     "cocur/slugify": {
         "version": "v4.0.0"
     },
@@ -48,6 +51,9 @@
     },
     "doctrine/dbal": {
         "version": "2.12.1"
+    },
+    "doctrine/deprecations": {
+        "version": "v0.5.3"
     },
     "doctrine/doctrine-bundle": {
         "version": "2.0",
@@ -125,6 +131,18 @@
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.3"
     },
+    "friendsofsymfony/jsrouting-bundle": {
+        "version": "2.8",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "2.3",
+            "ref": "a9f2e49180f75cdc71ae279a929c4b2e0638de84"
+        },
+        "files": [
+            "./config/routes/fos_js_routing.yaml"
+        ]
+    },
     "friendsofsymfony/rest-bundle": {
         "version": "2.2",
         "recipe": {
@@ -178,6 +196,15 @@
     },
     "nikic/php-parser": {
         "version": "v4.10.4"
+    },
+    "pagerfanta/core": {
+        "version": "v3.5.2"
+    },
+    "pagerfanta/doctrine-orm-adapter": {
+        "version": "v3.5.2"
+    },
+    "pagerfanta/twig": {
+        "version": "v3.5.2"
     },
     "phpdocumentor/reflection-common": {
         "version": "2.2.0"
@@ -430,6 +457,9 @@
     "symfony/orm-pack": {
         "version": "v2.1.0"
     },
+    "symfony/password-hasher": {
+        "version": "v5.4.3"
+    },
     "symfony/phpunit-bridge": {
         "version": "5.1",
         "recipe": {
@@ -465,6 +495,9 @@
     },
     "symfony/polyfill-php80": {
         "version": "v1.22.1"
+    },
+    "symfony/polyfill-php81": {
+        "version": "v1.24.0"
     },
     "symfony/process": {
         "version": "v5.2.3"
@@ -633,6 +666,18 @@
     },
     "symfony/yaml": {
         "version": "v5.2.3"
+    },
+    "symfonycasts/reset-password-bundle": {
+        "version": "1.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "1.0",
+            "ref": "97c1627c0384534997ae1047b93be517ca16de43"
+        },
+        "files": [
+            "./config/packages/reset_password.yaml"
+        ]
     },
     "twig/extra-bundle": {
         "version": "v3.3.0"

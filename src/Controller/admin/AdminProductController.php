@@ -85,7 +85,7 @@ class AdminProductController extends AbstractController
                 }
             }
             $em->flush();
-            return $this->redirectToRoute('admin.product_index');
+            return $this->redirectToRoute('admin.product_show',['id' => $product->getId()]);
         }
 
         return $this->render('product/edit.html.twig', [

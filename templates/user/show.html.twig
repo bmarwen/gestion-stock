@@ -1,0 +1,56 @@
+{% extends 'app/baseFront.html.twig' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block body %}
+<br><br>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+        <h1>Mon profil</h1>
+
+        <table class="table table-stripped">
+            <tbody>
+                <tr>
+                    <th>Nom</th>
+                    <td>{{ user.lastname }}</td>
+                </tr>
+                <tr>
+                    <th>Prénom</th>
+                    <td>{{ user.firstname }}</td>
+                </tr>
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <td>{{ user.username }}</td>
+                </tr>
+                <tr>
+                    <th>Adresse</th>
+                    <td>{{ user.address }}</td>
+                </tr>
+                <tr>
+                    <th>Téléphone</th>
+                    <td>{{ user.telephone }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ user.email }}</td>
+                </tr>
+                <tr>
+                    <th>Date de naissance</th>
+                    <td>{{ user.birthday ? user.birthday|date('Y-m-d') : '' }}</td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        <a class="btn btn-primary" href="{{ path('user_edit', {'id': user.id}) }}">Modfier profil</a>
+        <br><br>
+        <a class="btn btn-info" href="{{ path('home') }}">Retour</a>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

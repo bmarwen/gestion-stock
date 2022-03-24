@@ -21,7 +21,7 @@
                     <p>
                         {% if notification.type == 'product' %}
                             {% if notification.regardingType == 'qty' %}
-                                Le nombre d'article est <span style="font-weight:bold;">{{ notification.concern.howMany }}</span>
+                                La quantité est <span style="font-weight:bold;">{{ notification.concern.howMany }}</span>
                             {% else %}
                                 {% if date(notification.concern.expirationDate) > date() %}
                                     La date de péremption (<span style="font-weight:bold;">{{ notification.concern.expirationDate |date('d-m-Y') }}</span>) est dans les 3 prochains mois.

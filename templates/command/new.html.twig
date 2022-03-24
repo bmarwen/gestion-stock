@@ -1,9 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Nouvelle commande{% endblock %}
-{% block url %}{{ path('command_new') }}{% endblock %}
+{% block url %}{{ path('admin.command_new') }}{% endblock %}
 {% block stylesheets %}
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         .priceRemise{
             color:red;
@@ -34,7 +33,7 @@
                         <th scope="col">Prix Un HT</th>
                         <th scope="col">TVA %</th>
                         <th scope="col">Prix TTC(dinard)</th>
-                        <th scope="col">Nombre</th>
+                        <th scope="col">Quantité</th>
                         <th scope="col">Remise %</th>
                         <th scope="col">Action</th>
                     </tr>
@@ -72,7 +71,6 @@
     <a href="{{ path('admin.command_index') }}" class="btn btn-success">Retourner</a>
 {% endblock %}
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         const heightOfSelect = '600px';
         let productsInBasketsSize = 0;
@@ -346,7 +344,7 @@
                         {% if is_granted('ROLE_ADMIN') %}
                             window.location.assign('{{ path('admin.command_index') }}?success_creation=true');
                         {% else %}
-                            window.location.assign('{{ path('command_new') }}?success_creation=true');
+                            window.location.assign('{{ path('admin.command_new') }}?success_creation=true');
                         {% endif %}
 
                     }).catch(err => {

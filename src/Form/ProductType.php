@@ -13,6 +13,10 @@ class ProductType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        // date of expiration
+        $date = new \DateTime();
+        $date->add(new \DateInterval('P1Y'));
+
         $builder
             ->add('name')
             ->add('description')
@@ -27,7 +31,12 @@ class ProductType extends AbstractType
             ->add('purchacePriceUnHt')
             ->add('tva')
             ->add('gain')
-            ->add('expirationDate',DateType::class)
+            ->add('expirationDate',DateType::class,[
+                'widget' => 'single_text',
+                    // this is actually the default format for single_text
+                'format' => 'yyyy-MM-dd',
+                'data' => $date
+            ])
             ->add('imageFile', FileType::class, [
                 'required' => false
             ])

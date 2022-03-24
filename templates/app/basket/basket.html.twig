@@ -1,0 +1,134 @@
+{% extends 'app/baseFront.html.twig' %}
+
+{% block title %}Produit{% endblock %}
+
+{% block body %}
+<br><br>
+  <!-- ...:::: Start Cart Section:::... -->
+    <div class="cart-section">
+        <!-- Start Cart Table -->
+        <div class="cart-table-wrapper">
+            <div class="container">
+                <div class="row">
+                    {% set totalBasket = 0 %}
+                    <div class="col-12">
+                        {%if app.session.get('products') %}
+                        <div class="table_desc">
+                            <div class="table_page table-responsive">
+                                <table >
+                                    <!-- Start Cart Table Head -->
+                                    <thead>
+                                        <tr>
+                                            <th class="product_remove">Action</th>
+                                            <th class="product_thumb">Image</th>
+                                            <th class="product_name">Produit</th>
+                                            <th class="product-price">Prix</th>
+                                            <th class="product_quantity">Quantité</th>
+                                            <th class="product_total">Totale</th>
+                                        </tr>
+                                    </thead> <!-- End Cart Table Head -->
+                                    <tbody>
+                                        {% for product in app.session.get('products') %}
+                                        {%if productsFromDb[product.id].currentPromo is not null%} {# IF PROMO #}
+                                           {% set currentPrice = productsFromDb[product.id].getPriceAfterPromotionIfExists %}     
+                                        {% else %}
+                                           {% set currentPrice = product.price %}     
+                                        {% endif %}
+                                        {% set totalBasket = totalBasket + currentPrice * product.qty %}
+                                        <!-- Start Cart Single Item-->
+                                        <tr>
+                                            <td class="product_remove"><a href="{{path('basket_remove',{'id' : product.id })}}"><i class="fa fa-trash-o"></i></a></td>
+                                            <td class="product_thumb">
+                                                <a href="{{path('product_show', {'id': product.id })}}">
+                                                {% if product.imageFilePath is not null  %}
+                                                    <img src="{{ asset('images/products/' ~ product.imageFilePath) }}" alt="" >
+                                                {% else %}
+                                                    <img src="{{ asset('images/noProductPicture.png') }}" >
+                                                {% endif %}
+                                                </a>
+                                            </td>
+                                            <td class="product_name"><a href="{{path('product_show', {'id': product.id })}}">{{product.name}}</a></td>
+                                            <td class="product-price">
+                                            {%if productsFromDb[product.id].currentPromo is not null%}
+                                                <span>
+                                                    <br><del class="product-default-price-off">{{product.price}}</del> 
+                                                    {{  currentPrice }} DT
+                                                    <span style="background-color:#EA2027;color:white;border-radius:15px;font-size:16px;font-weight:bold;padding:2px;">-{{productsFromDb[product.id].currentPromo.pourcent}}%</span>
+                                            {%else%}
+                                                    <br>{{ product.price }} DT
+                                            {%endif%}
+                                            
+                                            </td>
+                                            <td class="product_quantity"><label>Quantité</label><input min="1" max="100" value="{{product.qty}}" type="number" id="qty-{{product.id}}" data-product-id="{{product.id}}" ></td>
+                                            <td class="product_total">
+                                            {{product.qty * currentPrice }} DT
+                                            </td>
+                                        </tr> <!-- End Cart Single Item-->
+                                        {%endfor%}
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% else %}
+                            Ajouter un produit dans le panier en cliquant <a style="font-weight:600;" href="{{path('home')}}">ici</a>.
+                        {%endif%}
+                        
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Cart Table -->
+
+        <!-- Start Coupon Start -->
+        <div class="coupon_area">
+            <div class="container">
+                {% if app.session.get('products') %}
+                <div class="row">
+                    <div class="col-lg-6 col-md-6">
+                        {#<div class="coupon_code left">
+                            <h3>Coupon</h3>
+                            <div class="coupon_inner">
+                                <p>Enter your coupon code if you have one.</p>
+                                <input placeholder="Coupon code" type="text">
+                                <button type="submit">Apply coupon</button>
+                            </div>
+                        </div>#}
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <div class="coupon_code right">
+                            <h3>Totale</h3>
+                            <div class="coupon_inner">
+                                <div class="cart_subtotal">
+                                    <p>Sous totale</p>
+                                    <p class="cart_amount">{{totalBasket}} DT</p>
+                                </div>
+                                <div class="cart_subtotal ">
+                                    <p>Frais de livraison</p>
+                                    <p class="cart_amount">{%if totalBasket < freeShippingMinPrice.value %}{{shippingPrice.value}} DT{% else %}Gratuite{% endif %}</p>
+                                </div>
+                                <div class="cart_subtotal">
+                                    <p>Totale</p>
+                                    <p class="cart_amount">{%if totalBasket < freeShippingMinPrice.value %}{{totalBasket + shippingPrice.value}}{% else %}{{totalBasket}}{% endif %} DT</p>
+                                </div>
+                                <div class="checkout_btn">
+                                    <a href="{{path('checkout_new')}}">Commander</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div> <!-- End Coupon Start -->
+
+    </div> <!-- ...:::: End Cart Section:::... -->
+{% endblock %}
+{% block javascripts %}
+    <script>
+       $("input[id^='qty-']").change(function(){
+           let qty = $(this).val();
+           let urlUpdateQty = Routing.generate('basket_qty_update', {'id' : $(this).data('product-id')});
+           window.location = urlUpdateQty + "?qty=" + parseInt(qty);
+       });
+    </script>
+{% endblock %}

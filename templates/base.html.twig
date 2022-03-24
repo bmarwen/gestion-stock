@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="{{ asset('./web/css/responsive.css') }}">
     <!-- modernizr css -->
     <script src="{{ asset('./web/js/vendor/modernizr-2.8.3.min.js') }}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     {% block stylesheets %}{% endblock %}
 </head>
     <body>
@@ -41,24 +42,29 @@
         <div class="sidebar-menu">
             <div class="sidebar-header">
                 <div class="logo">
-                    <a href="{{ path('home')}}"><img class="rounded-circle" src="{{ asset('images/logo.jpg') }}" alt="logo"></a>
+                    <a href="{{ path('admin.index')}}"><img class="rounded-circle" src="{{ asset('images/logo.jpg') }}" alt="logo"></a>
                 </div>
             </div>
             <div class="main-menu">
                 <div class="menu-inner">
                     <nav>
                         <ul class="metismenu" id="menu">
-                            <li><a href="{{ path('command_new') }}" style="color:white;font-weight:bold;"><i class="ti-shopping-cart-full logoMenu" ></i> <span>Vendre des articles</span></a></li>
-                            <li><a href="{{ path('admin.command_index') }}"><i class="ti-credit-card logoMenu"></i> <span>Commandes</span></a></li>
-                            <li><a href="{{ path('admin.client_index') }}"><i class="ti-user logoMenu"></i> <span>Clients</span></a></li>
+                            <li><a href="{{ path('admin.command_new') }}" style="{{ app.request.get('_route') == 'admin.command_new' ? 'color:white;font-weight:bold;' }}" ><i class="ti-shopping-cart-full logoMenu active" ></i> <span>Vendre des articles</span></a></li>
+                            <li><a href="{{ path('admin.command_index') }}" style="{{ app.request.get('_route') == 'admin.command_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-credit-card logoMenu"></i> <span>Commandes</span></a></li>
+                            <li><a href="{{ path('admin.command_on_line_index') }}" style="{{ app.request.get('_route') == 'admin.command_on_line_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-world logoMenu"></i> <span>Commandes en ligne</span></a></li>
+                            <li><a href="{{ path('admin.client_index') }}" style="{{ app.request.get('_route') == 'admin.client_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-user logoMenu"></i> <span>Clients</span></a></li>
+                            <hr>
                             {% if is_granted('ROLE_ADMIN') %}
-                                <li><a href="{{ path('admin.product_index') }}"><i class="ti-package logoMenu"></i> <span>Produits</span></a></li>
-                                <li><a href="{{ path('admin.category_index') }}"><i class="ti-layout-grid3-alt logoMenu"></i> <span>Catégories</span></a></li>
-                                <li><a href="{{ path('admin.provider_index') }}"><i class="ti-truck logoMenu"></i> <span>Fournisseur</span></a></li>
-                                <li><a href="{{ path('admin.bills_index') }}"><i class="ti-receipt logoMenu"></i> <span>Factures</span></a></li>
+                                <li><a href="{{ path('admin.product_index') }}" style="{{ app.request.get('_route') == 'admin.product_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-package logoMenu"></i> <span>Produits</span></a></li>
+                                <li><a href="{{ path('admin.promo_index') }}" style="{{ app.request.get('_route') == 'admin.promo_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-wallet logoMenu"></i> <span>Promotions</span></a></li>
+                                <li><a href="{{ path('admin.category_index') }}" style="{{ app.request.get('_route') == 'admin.category_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-layout-grid3-alt logoMenu"></i> <span>Catégories</span></a></li>
+                                <li><a href="{{ path('admin.provider_index') }}" style="{{ app.request.get('_route') == 'admin.provider_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-truck logoMenu"></i> <span>Fournisseur</span></a></li>
+                                {#<li><a href="{{ path('admin.bills_index') }}" style="{{ app.request.get('_route') == 'admin.bills_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-receipt logoMenu"></i> <span>Factures</span></a></li>#}
                                 <li><a href="#"><i class="ti-stats-up logoMenu"></i> <span>Statistiques (قريباً)</span></a></li>
-                            {% endif %}
-                        </ul>
+                                {% endif %}
+                            <hr>
+                            <li><a href="{{ path('admin.application_index') }}" style="{{ app.request.get('_route') == 'admin.application_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-settings logoMenu"></i> <span>Application</span></a></li>
+                            </ul>
                     </nav>
                 </div>
             </div>
@@ -204,6 +210,7 @@
             <script src="{{ asset('./web/js/plugins.js') }}"></script>
             <script src="{{ asset('./web/js/scripts.js') }}"></script>
             <script src="{{ asset('./web/js/common.js') }}"></script>
+            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         {% block javascripts %}
         {% endblock %}
     </body>

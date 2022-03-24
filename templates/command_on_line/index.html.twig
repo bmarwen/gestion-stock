@@ -1,0 +1,136 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Commandes{% endblock %}
+{% block url %}{{ path('admin.command_index') }}{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+
+{% block body %}
+    
+    {% for message in app.flashes('update_cmd') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>Numéro de commande</th>
+                <th>Produits</th>
+                <th>Total (DT)</th>
+                <th>Créée le</th>
+                <th>Prénom</th>
+                <th>Nom</th>
+                <th>Téléphone</th>
+                <th>Plus de détails</th>
+                <th>Contacté ?</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for command_on_line in command_on_lines %}
+        {% set totalProd = 0 %}
+            <tr>
+                <td>#{{"now"|date("Ym")}}{{ "%05d" |format(command_on_line.id) }}</td>
+                <td width="25%">
+                    <ul>
+                        {% for cmdDetail in command_on_line.cmdDetails %}
+                            {% if cmdDetail.hasPromo is defined %}
+                                {% set currentPrice = cmdDetail.promo.price_after_promo %}
+                            {% else %}
+                                {% set currentPrice = cmdDetail.price %}
+                            {% endif %}
+                            <li style="font-size:13px;font-weight:bold;" >
+                            <a target="_blank" href="{{path('admin.product_show',{'id': cmdDetail.id })}}">{{ cmdDetail.name |length > 35 ? cmdDetail.name|slice(0, 35) ~ '...' : cmdDetail.name }}</a>
+                             Prix: {% if cmdDetail.hasPromo is defined %}
+                                        <span style="color:red;font-size:15px;font-weight:bold;">*promo</span>
+                                    {% endif %}
+                                 {{ currentPrice }} DT Quantité: {{ cmdDetail.qty }}
+                             </li>
+                        {% endfor %}
+                     </ul>
+                </td>
+                <td style="font-size:18px;font-weight:bold;">
+                    {{command_on_line.totalCommand}} <br>Frais livraison: {{command_on_line.shippingPrice}}
+                </td>
+                <td>{{ command_on_line.createdAt |date('Y-m-d H:i') }}</td>
+                <td>{{ command_on_line.firstName }}</td>
+                <td>{{ command_on_line.lastName }}</td>
+                <td>{{ command_on_line.phone }}</td>
+                <td>{{ command_on_line.moreDetails |length > 35 ? command_on_line.moreDetails|slice(0, 35) ~ '...' : command_on_line.moreDetails }}</td>
+                <td>
+                    <span style="font-size:16px;font-weight:600;color:
+                    {% if command_on_line.status %}
+                        #27ae60
+                    {% else %}
+                        #e74c3c
+                    {% endif%}
+                    ;">{{ command_on_line.isContacted ? 'Oui' : 'Non' }}</span>
+                    <br><br>
+                    {% if not command_on_line.isContacted %}
+                    <form action="{{path('admin.command_on_line_change_contacted',{'id' :command_on_line.id })}}" method="POST">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <button class="btn" type="submit">Changer</button>
+                            </div>
+                        </div>
+                    </form>
+                    {% endif %}
+                </td>
+                <td>
+                    <span style="font-size:16px;font-weight:600;color:
+                    {% if command_on_line.status == 'créée' %}
+                        #e67e22
+                    {%elseif command_on_line.status == 'En cours de livraison' %}
+                        #2980b9
+                    {%elseif command_on_line.status == 'Annulée' %}
+                        #e74c3c
+                    {% else %}
+                        #27ae60
+                    {% endif %};">{{ command_on_line.status |upper }}</span>
+                    <br><br>
+                    {% if command_on_line.status != 'Terminée' %}
+                        <form action="{{path('admin.command_on_line_change_status',{'id':command_on_line.id })}}" method="POST">
+                            <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <select class="form-control" id="statusCmd" name="status_cmd">
+                                        {% for status in statusCmd %}
+                                            <option {% if status == command_on_line.status %}selected{%endif%} value="{{status}}">{{status}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn" type="submit">Changer</button>
+                            </div>
+                            </div>
+                        </form>
+                     {% endif %}
+                </td>
+                <td>
+                    <a style="font-size:20px;" href="{{ path('admin.command_on_line_show', {'id': command_on_line.id}) }}"><i title="Plus de détail" class="far fa-eye"></i></a>
+                    {% if command_on_line.status == 'Terminée' %}
+                    <a href="{{ path('admin.generate_novice_cmd_online',{'id': command_on_line.id })}}" target="_blank" style="font-size:20px;"><i title="Générer facture" class="ti-receipt"></i></a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="12">Aucune commande enregistrée!</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                "pagingType": "full_numbers",
+                "order": [[ 3, "desc" ]]
+            });
+        } );
+    </script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+{% block title %}Liste des promotions{% endblock %}
+{% block url %}{{ path('admin.promo_index') }}{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+{% block body %}
+    <div class="row flex mt-4 mb-4">    
+        <a class="btn btn-primary" href="{{ path('admin.promo_new') }}">Ajouter une promotion</a>
+    </div>
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Crée le</th>
+                <th>Pourcentage %</th>
+                <th>Commence le</th>
+                <th>Expire le</th>
+                <th>Statut</th>
+                <th>Activé ?</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for promo in promos %}
+            <tr>
+
+                <td><a href="{{path('admin.product_show', {'id': promo.product.id }) }}">{{ promo.product.name |length > 45 ? promo.product.name |slice(0, 45) ~ '...' : promo.product.name }}</a></td>
+                <td>{{ promo.createdAt ? promo.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td><h5>{{ promo.pourcent }} %</h5></td>
+                <td><h5>{{ promo.startsAt ? promo.startsAt|date('Y-m-d H:i:s') : '' }}</h5></td>
+                <td><h5>{{ promo.expiresAt ? promo.expiresAt|date('Y-m-d H:i:s') : '' }}</h5></td>
+                <td>
+                    {% if promo.expiresAt|date('Y-m-d H:i:s') < "now"|date('Y-m-d H:i:s') %}
+                        <h6 style="color:#eb4d4b;">Expiré</h6>
+                    {% elseif promo.startsAt|date('Y-m-d H:i:s') < "now"|date('Y-m-d H:i:s') %}
+                        <h6 style="color:#27ae60;">En cours</h6>
+                    {%else %}   
+                        <h6 style="color:#eb4d4b;">Expiré</h6> 
+                    {% endif %}
+                </td>
+                <td>{{ promo.isEnabled ? 'Oui' : '<h6 style="color:#eb4d4b;">Désactivé</h6>' }}</td>
+                <td>
+                    <a href="{{ path('admin.promo_edit', {'id': promo.id}) }}"><i class="fas fa-pencil-alt"></i></a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">Pas de promotion enregistrée</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                "pagingType": "full_numbers",
+                "order": [[ 1, "asc" ]]
+            });
+        } );
+    </script>
+{% endblock %}

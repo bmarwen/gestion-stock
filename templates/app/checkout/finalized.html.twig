@@ -1,0 +1,19 @@
+{% extends 'app/baseFront.html.twig' %}
+
+{% block title %}Commande créée{% endblock %}
+
+{% block body %}
+<br><br>
+  <!-- ...:::: Start Checkout Section:::... -->
+    <div class="checkout_section">
+        <div class="container">
+        <center><h1>Commande numéro #{{"now"|date("Ym")}}{{ "%05d" |format(commande.id) }} a été créée avec succès</h2></center>
+        <center><h4>nous vous contacterons pour plus de détails sur la livraison</h4></center>
+        </div>
+    </div><!-- ...:::: End Checkout Section:::... -->
+{% endblock %}
+{% block javascripts %}
+    <script>
+      
+    </script>
+{% endblock %}

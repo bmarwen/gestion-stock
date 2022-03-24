@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Promo{% endblock %}
+
+{% block body %}
+    <h1>Promo</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ promo.id }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ promo.createdAt ? promo.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>ExpiresAt</th>
+                <td>{{ promo.expiresAt ? promo.expiresAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Pourcent</th>
+                <td>{{ promo.pourcent }}</td>
+            </tr>
+            <tr>
+                <th>StartsAt</th>
+                <td>{{ promo.startsAt ? promo.startsAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>IsEnabled</th>
+                <td>{{ promo.isEnabled ? 'Yes' : 'No' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('promo_index') }}">back to list</a>
+
+    <a href="{{ path('promo_edit', {'id': promo.id}) }}">edit</a>
+
+    {{ include('promo/_delete_form.html.twig') }}
+{% endblock %}

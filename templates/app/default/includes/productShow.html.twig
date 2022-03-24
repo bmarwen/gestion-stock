@@ -1,0 +1,37 @@
+<!-- Start Product Defautlt Single -->
+<div class="product-default-single border-around" style="height:430px;">
+    <div class="product-img-warp">
+        <a href="{{path('product_show', {'id': product.id })}}" class="product-default-img-link">
+        {% if product.filename is not null  %}
+            <img src="{{ asset('images/products/' ~ product.filename) }}" alt="" class="product-default-img img-fluid">
+        {% else %}
+            <img src="{{ asset('images/noProductPicture.png') }}" class="product-default-img img-fluid">
+        {% endif %} 
+        </a>
+        <div class="product-action-icon-link">
+            <ul>
+                <li><a href="{{path('product_show', {'id': product.id })}}" ><i class="icon-eye"></i></a></li>
+                <li><a href="{{path('basket_add',{'id' : product.id })}}" ><i class="icon-shopping-cart"></i></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="product-default-content">
+        <h6 class="product-default-link" style="margin-bottom:-12px;">
+            <a style="font-size:15px;" href="{{path('product_show', {'id': product.id })}}">
+                {{ product.name|length > 35 ? product.name|slice(0, 35) ~ '...' : product.name  }}
+            </a>
+            {% if product.name|length < 22 %}<br>{%endif%}
+        </h6>
+        <span class="product-default-price">
+            {%if product.currentPromo is not null%}
+            <span style="background-color:#EA2027;color:white;border-radius:15px;font-size:16px;font-weight:bold;padding:2px;">-{{product.currentPromo.pourcent}}%</span>
+            <span>
+                <br><del class="product-default-price-off">{{product.price}}</del> 
+                {{ product.getPriceAfterPromotionIfExists}}
+            {%else%}
+                <br>{{product.price}} 
+            {%endif%} DT
+            </span>  
+            </span>                                                            
+    </div>
+</div> <!-- End Product Defautlt Single -->

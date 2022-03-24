@@ -3,6 +3,7 @@
 
 namespace App\EventListener;
 
+use App\Entity\Application;
 use App\Entity\Notification;
 use App\Entity\Product;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +35,10 @@ class UserAgentSubscriber implements EventSubscriberInterface
 
     public function onKernelRequest()
     {
+        //get shipping information
+        $shippingPrice = $this->em->getRepository(Application::class)->findOneByName('shipping_price');
+        $freeShippingMinPrice = $this->em->getRepository(Application::class)->findOneByName('free_shipping_min_price');
+        
         $notifications = $this->em->getRepository(Notification::class)->findAll();
         $todayPlusThreeMonths = new \DateTime();
         $todayPlusThreeMonths->add(new \DateInterval('P3M'));
@@ -77,6 +82,8 @@ class UserAgentSubscriber implements EventSubscriberInterface
         $this->em->flush();
         $this->twig->addGlobal("notifications_count",$notificationsCount);
         $this->twig->addGlobal("notifications_last_five",$notificationsLast);
+        $this->twig->addGlobal("shippingPrice",$shippingPrice);
+        $this->twig->addGlobal("freeShippingMinPrice",$freeShippingMinPrice);
     }
 
     /**
