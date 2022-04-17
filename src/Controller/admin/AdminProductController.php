@@ -7,10 +7,12 @@ use App\Entity\Product;
 use App\Form\ProductType;
 use App\Repository\ProductRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\ConstraintViolation;
 
 /**
  * @Route("/admin/product")
@@ -35,7 +37,7 @@ class AdminProductController extends AbstractController
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
-
+        
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($product);
@@ -72,6 +74,21 @@ class AdminProductController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($product->getBill() != null && $product->getBill()->getNumber() == null) {
+                $form->addError(new FormError("Numéro de la facture obligatoire"));
+                return $this->render('product/edit.html.twig', [
+                    'product' => $product,
+                    'form' => $form->createView(),
+                ]);
+            }
+            if ($product->getBill() != null && $product->getBill()->getBillPdfname() == null && $product->getBill()->getBillPdfFile() == null) {
+                $form->addError(new FormError("Image facture obligatoire"));
+                return $this->render('product/edit.html.twig', [
+                    'product' => $product,
+                    'form' => $form->createView(),
+                ]);
+            }
+           
             $this->getDoctrine()->getManager()->flush();
             $this->addFlash('success', 'Article modifié avec succès');
             //remove this product from notification system

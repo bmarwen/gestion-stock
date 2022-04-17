@@ -49,7 +49,7 @@
             </tr>
             <tr>
                 <th>Numéro facture</th>
-                <td>{% if product.bill is not null %}{{ product.bill.number }}{% endif %}</td>
+                <td>{% if product.bill is not null %}<a href="{{ path('admin.bills_show',{'id': product.bill.id }) }}">{{ product.bill.number }}</a>{% endif %}</td>
             </tr>
             <tr>
                 <th>Marque</th>
