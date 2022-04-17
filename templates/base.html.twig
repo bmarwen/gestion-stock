@@ -60,10 +60,13 @@
                                 <li><a href="{{ path('admin.category_index') }}" style="{{ app.request.get('_route') == 'admin.category_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-layout-grid3-alt logoMenu"></i> <span>Catégories</span></a></li>
                                 <li><a href="{{ path('admin.provider_index') }}" style="{{ app.request.get('_route') == 'admin.provider_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-truck logoMenu"></i> <span>Fournisseur</span></a></li>
                                 {#<li><a href="{{ path('admin.bills_index') }}" style="{{ app.request.get('_route') == 'admin.bills_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-receipt logoMenu"></i> <span>Factures</span></a></li>#}
+                                <li><a href="#"><i class="ti-heart logoMenu"></i> <span>Code promos</span></a></li>
                                 <li><a href="#"><i class="ti-stats-up logoMenu"></i> <span>Statistiques (قريباً)</span></a></li>
                                 {% endif %}
                             <hr>
-                            <li><a href="{{ path('admin.application_index') }}" style="{{ app.request.get('_route') == 'admin.application_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-settings logoMenu"></i> <span>Application</span></a></li>
+                                <li><a href="{{ path('admin.application_index') }}" style="{{ app.request.get('_route') == 'admin.application_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-settings logoMenu"></i> <span>Application</span></a></li>
+                            <hr>    
+                                <li><a href="{{path('admin.cash_register_index')}}" style="{{ app.request.get('_route') == 'admin.cash_register_index' ? 'color:white;font-weight:bold;' }}"><i class="ti-money logoMenu" style="color:orange;" ></i> <span>Caisse</span></a></li>
                             </ul>
                     </nav>
                 </div>

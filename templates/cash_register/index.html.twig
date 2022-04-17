@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Caisse{% endblock %}
+
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+{% block body %}
+<h1>Caisse pour le {{whichday |date('d-m-Y')}}</h1>
+<br>
+<div class="row">
+    <div class="col-md-6">
+        <form action="" method="GET">
+            <div class="form-group" >
+                <input type="date" class="form-control" style="float:left;width:250px;" id="whichday" name="whichday" max="{{'today' | date('Y-m-d')}}">
+                &nbsp;&nbsp;
+                <button class="btn btn-primary">Changer la date</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<br>
+<div class="row">
+    <div class="col-md-6">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Piece (dinard)</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Total (dinard)</th>
+                </tr>
+            </thead>
+            <form method="POST" action="{{path('admin.update_piece_monnaie')}}">
+                <input type="hidden" name="_whichday" value="{{whichday | date('Y-m-d')}}" />
+                <tbody>
+                    {% for piece in piece_monnaie %}
+                        {% set howMany = 0 %}
+                        {% for cash_register_piece_monnaie in cash_register_piece_monnaies %}
+                            {% if cash_register_piece_monnaie.moneyPiece == piece %}
+                                {% set howMany = cash_register_piece_monnaie.howMany %}
+                            {% endif %}
+                        {% endfor %}
+                        <tr>
+                            <td>{{piece}}</td>
+                            <td>
+                                <input type="number" min="0" class="form-control" style="width:25%;" required="required" value="{{howMany}}" name="piece_{{piece}}" id="piece_{{ loop.index }}" data-index="{{ loop.index }}" data-piece="{{ piece }}" />
+                            </td>
+                            <td>
+                                <span style="font-weight:bold;" id="total_piece_{{ loop.index }}">0.00</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td><button type="submit" class="btn btn-warning" >Appliquer</button></td>
+                        <td style="font-weight:bold;text-align:right;">TOTAL</td>
+                        <td style="font-weight:bold;" id="total_piece_monnaie">0.00</td>
+                    </tr>
+                </tbody>
+            </form>
+        </table>
+    </div>
+    <div class="col-md-6">No idea for now.. may be stats</div>
+</div>
+<hr>
+<div class="row">
+    <div class="col-md-12">Here we will have the list of products sold in paraElJinene</div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        Date.prototype.toDateInputValue = (function() {
+            var local = new Date("{{whichday | date('Y-m-d')}}");
+            local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+            return local.toJSON().slice(0,10);
+        });
+        $(document).ready( function () {
+            $('#table_piece_monnaie').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('#table').DataTable({
+                "pagingType": "full_numbers"
+            });
+            //clearUrlFromParams()
+            document.getElementById('whichday').value = new Date().toDateInputValue();
+            
+            {% for piece in piece_monnaie %}
+                document.getElementById("piece_{{ loop.index }}").addEventListener('keyup', updateTotalOfPieceMonnaie);
+                document.getElementById("piece_{{ loop.index }}").addEventListener('change', updateTotalOfPieceMonnaie);
+                updateTotalOfPieceMonnaie(document.getElementById("piece_{{ loop.index }}"));
+            {%endfor%}
+        } );
+
+        function updateTotalOfPieceMonnaie(e){
+            let howManyInput;
+            let howManyValue;
+            if (e.srcElement === undefined) {
+                howManyInput = e;
+                howManyValue = howManyInput.value;
+            } else {
+                howManyInput = e.srcElement;
+                howManyValue = howManyInput.value;
+            }
+            
+            let piece = howManyInput.dataset.piece;
+            let pieceIndex = howManyInput.dataset.index;
+            $('#total_piece_' + pieceIndex).html(parseFloat(piece * howManyValue).toFixed(2))
+            $('#total_piece_monnaie').html(getTotalPieceMonnaie());
+        }
+
+        function getTotalPieceMonnaie(){
+            let total = 0;
+            {% for piece in piece_monnaie %}
+                total += parseInt($("#piece_{{loop.index}}").val()) * {{piece}}
+            {% endfor %}
+
+            return parseFloat(total).toFixed(2)
+        }
+        
+    </script>
+{% endblock %}

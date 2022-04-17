@@ -60,6 +60,17 @@
             <div class="col-md-12 mt-5">
                 <hr>
                 <span class="totalCommand">Total TTC</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:red;font-size:20px;font-weight:bold;" id="alertRemiseApplied">  </span> <h1><span id="totalBasketPrice">0</span> DNT </h1><br>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="moneyreceived">Montant reçu (Dinard)</label>
+                        <input class="form-control" type="number" min="0" name="moneyreceived" id="moneyreceived" />
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="moneyreturned">Montant retourner (Dinard)</label>
+                        <input class="form-control" type="number" name="moneyreturned" id="moneyreturned"   />
+                    </div>
+                </div>
                 <button id="validateBasket" class="btn btn-primary btn-xl mb-3"><span class="font-weight-bold">{{ button_label|default('Valider') }}</span></button>
                 <button id="emptyBasketBtn" class="btn btn-warning btn-xl mb-3"><span class="font-weight-bold">{{ button_label|default('Annuler') }}</span></button>
             </div>
@@ -86,6 +97,8 @@
             let emptyBasketBtn = $('#emptyBasketBtn')
             emptyBasketBtn.addClass("hidden")
             let commentTextArea = document.getElementById('command_comment');
+            let moneyreceivedInput = document.getElementById('moneyreceived');
+            let moneyreturnedInput = document.getElementById('moneyreturned');
             //let remiseBtn = document.getElementById('remise');
             //let applyRemise = document.getElementById('applyRemise');
             //let cancelRemise = document.getElementById('cancelRemise');
@@ -93,6 +106,8 @@
             //cancelRemise.addEventListener('click',cancelRemiseToTotal);
             //let remiseBtn = document.getElementById('remise');
             commentTextArea.addEventListener('keyup', updateCommentTextAreaCount);
+            moneyreceivedInput.addEventListener('keyup', cleanMoneyReceivedAndReturned);
+            moneyreturnedInput.addEventListener('keyup', cleanMoneyReceivedAndReturned);
             validateBasketBtn.prop('disabled', true);
             handlingSelectClients(selectClients)
             handlingSelectProducts(selectProducts)
@@ -115,6 +130,10 @@
                         lastOptionAdded.attr('data-price',Math.ceil(product.price * 10) /10);
                         lastOptionAdded.attr('data-price-un-ht',Math.ceil(product.purchacePriceUnHt * 10) /10);
                         lastOptionAdded.attr('data-tva',product.tva);
+                        lastOptionAdded.attr('data-remise','0');
+                        if(product.hasOwnProperty('currentPromo')){
+                            lastOptionAdded.attr('data-remise',product.currentPromo.pourcent);
+                        }
                         lastOptionAdded.attr('data-maxnb',product.howMany);
                         howManyProducts.push({
                             'howMany': product.howMany,
@@ -126,7 +145,7 @@
             })
             selectProducts.prepend("<option value='' ></option>");
         }
-
+    
         function addProductToBasket(e){
             e.preventDefault();
             let tBodyBasket = document.getElementById("tBodyBasket");
@@ -161,6 +180,7 @@
                 let priceOptionSelected = optionSelected.attr('data-price');
                 let priceUnHt = optionSelected.attr('data-price-un-ht');
                 let tva = optionSelected.attr('data-tva');
+                let remise = optionSelected.attr('data-remise');
                 let priceunittc = Math.ceil(priceOptionSelected * 10) / 10;
                 row.id = 'tr-product-' + valOptionSelected;
                 row.dataset.id = valOptionSelected;
@@ -177,7 +197,7 @@
                 cellNumber.innerText = nbProducts;
                 cellNumber.className = 'number';
                 let remiseAction = row.insertCell(5);
-                let remiseInput = createRemiseInput(valOptionSelected);
+                let remiseInput = createRemiseInput(valOptionSelected, remise);
                 remiseAction.append(remiseInput);
                 let cellAction = row.insertCell(6);
                 let iconDeleteBtn = createDeleteBtn(row.id);
@@ -215,7 +235,7 @@
         /**
          * @return HTMLElement
          */
-        function createRemiseInput(rowId){
+        function createRemiseInput(rowId, remise){
             let remiseRowId = "remise-" + rowId ;
             let remiseInput = document.createElement('input')
             remiseInput.classList.add('form-control')
@@ -225,19 +245,17 @@
             remiseInput.setAttribute('minlength','0')
             remiseInput.setAttribute('maxlength','100')
             remiseInput.setAttribute('style','width:60px;')
-            remiseInput.addEventListener('keyup',calculatePriceProductAfterRemise);
-            remiseInput.addEventListener('keyup',remiseMinAndMax);
-
+            remiseInput.value = remise
+            remiseInput.setAttribute('disabled','disabled')
+            calculatePriceProductAfterRemise(remiseInput)
             return remiseInput;
         }
 
-        function calculatePriceProductAfterRemise(e){
-            let remiseInput = e.srcElement;
-            let valueRemise = remiseInput.value;
+        function calculatePriceProductAfterRemise(remiseInput){
+            let valueRemise = parseInt(remiseInput.value);
             let rowId = remiseInput.dataset.rowid;
             let elementTdPriceTtc = $("#tr-product-" + rowId + " td:nth-child(4)" );
             let elementTrPrice = $("#tr-product-" + rowId ).data('pricettc');
-
             if(valueRemise === undefined || valueRemise === 0 || valueRemise === "") {
                 elementTdPriceTtc.html(elementTrPrice);
                 elementTdPriceTtc.removeClass('priceRemise')
@@ -283,6 +301,10 @@
                 alert('Erreur dans la commande: commentaire!')
                 return;
             }
+            if(isMoneyReceivedLessThanTotal()){
+                alert('Le montant reçu par le client doit être supérieur au total de la commande')
+                return;
+            }
             if(!confirm('Etês vous sûr ?')) return;
             let commentText = $('#command_comment').val();
             let promo = null;
@@ -321,13 +343,15 @@
             }
 
             data['products'] = products;
+            data['moneyReceivedByTheClient'] = parseFloat(document.getElementById('moneyreceived').value)
+            data['moneyReturnedToTheClient'] = parseFloat(document.getElementById('moneyreturned').value)
             let commandUrl = 'commands'
-            sendHttpRequest('POST', urlApi + commandUrl,data)
+            sendHttpRequest('POST', urlApi + commandUrl, data)
                 .then(response => {
                     updateStockProducts(response);
                 }).catch(err => {
-                console.log(err)
-            })
+                    console.log(err)
+                })
         }
 
 
@@ -346,7 +370,6 @@
                         {% else %}
                             window.location.assign('{{ path('admin.command_new') }}?success_creation=true');
                         {% endif %}
-
                     }).catch(err => {
                     console.log(err)
                 })
@@ -442,6 +465,24 @@
             let alertRemiseApplied = $('#alertRemiseApplied');
             alertRemiseApplied.addClass('hidden');
             alertRemiseApplied.text('');
+        }
+
+        function cleanMoneyReceivedAndReturned(e){
+            let totalCommand = calculatePriceCommand();
+            let moneyreceived = document.getElementById('moneyreceived');
+            let moneyreturned = document.getElementById('moneyreturned');
+            if (totalCommand > 0 && moneyreceived.value > 0) {
+                moneyreturned.value = parseFloat(moneyreceived.value - totalCommand).toFixed(2)
+            }
+        }
+
+        function isMoneyReceivedLessThanTotal(){
+            let moneyreceived = document.getElementById('moneyreceived');
+            let totalCommand = calculatePriceCommand();
+            if (moneyreceived.value < totalCommand) {
+                return true
+            }
+            return false
         }
     </script>
 {% endblock %}

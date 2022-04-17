@@ -1,4 +1,5 @@
 {{ form_start(form) }}
+{{ form_errors(form) }}
 <div class="row">
     <div class="col-md-6">
         {{ form_row(form.code) }}
@@ -23,3 +24,11 @@
 <br><br>
     <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
 {{ form_end(form) }}
+{% if product.bill is not null %}
+<br>
+<form method="POST" action="{{path('admin.bills_delete',{'id': product.bill.id })}}" onsubmit="return confirm('Êtes-vous sûr de bien vouloir supprimer la facture de ce produit?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.bill.id) }}"/>
+    <input type="hidden" name="_method" value="DELETE">
+    <button type="submit" class="btn btn-warning">Supprimer facture</button>
+</form>
+{% endif %}

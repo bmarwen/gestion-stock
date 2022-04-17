@@ -41,10 +41,22 @@ class Command
      */
     private $comment;
 
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $moneyReceivedByTheClient;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $moneyReturnedToTheClient;
+
 
     public function __construct()
     {
         $this->createdAt = new \DateTime();
+        $this->moneyReturnedToTheClient = 0;
+        $this->moneyReceivedByTheClient = 0;
     }
 
     public function getId(): ?int
@@ -96,6 +108,30 @@ class Command
     public function setComment(?string $comment): self
     {
         $this->comment = $comment;
+
+        return $this;
+    }
+
+    public function getMoneyReturnedToTheClient(): ?float
+    {
+        return $this->moneyReturnedToTheClient;
+    }
+
+    public function setMoneyReturnedToTheClient(float $moneyReturnedToTheClient): self
+    {
+        $this->moneyReturnedToTheClient = $moneyReturnedToTheClient;
+
+        return $this;
+    }
+
+    public function getMoneyReceivedByTheClient(): ?float
+    {
+        return $this->moneyReceivedByTheClient;
+    }
+
+    public function setMoneyReceivedByTheClient(float $moneyReceivedByTheClient): self
+    {
+        $this->moneyReceivedByTheClient = $moneyReceivedByTheClient;
 
         return $this;
     }
