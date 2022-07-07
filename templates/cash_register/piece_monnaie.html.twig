@@ -1,0 +1,36 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Piece (dinard)</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Total (dinard)</th>
+        </tr>
+    </thead>
+    <form method="POST" action="{{path('admin.update_piece_monnaie')}}">
+        <input type="hidden" name="_whichday" value="{{whichday | date('Y-m-d')}}" />
+        <tbody>
+            {% for piece in piece_monnaie %}
+                {% set howMany = 0 %}
+                {% for cash_register_piece_monnaie in cash_register_piece_monnaies %}
+                    {% if cash_register_piece_monnaie.moneyPiece == piece %}
+                        {% set howMany = cash_register_piece_monnaie.howMany %}
+                    {% endif %}
+                {% endfor %}
+                <tr>
+                    <td>{{piece}}</td>
+                    <td>
+                        <input type="number" min="0" class="form-control" style="width:25%;" required="required" value="{{howMany}}" name="piece_{{piece}}" id="piece_{{ loop.index }}" data-index="{{ loop.index }}" data-piece="{{ piece }}" />
+                    </td>
+                    <td>
+                        <span style="font-weight:bold;" id="total_piece_{{ loop.index }}">0.00</span>
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td><button type="submit" class="btn btn-warning" >Appliquer</button></td>
+                <td style="font-weight:bold;text-align:right;">TOTAL</td>
+                <td style="font-weight:bold;" id="total_piece_monnaie">0.00</td>
+            </tr>
+        </tbody>
+    </form>
+</table>

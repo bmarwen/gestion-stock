@@ -135,12 +135,23 @@
                                                 <td>{{totalBasket}} DT</td>
                                             </tr>
                                             <tr>
-                                                <th>livraison</th>
+                                                <th>Livraison</th>
                                                 <td><strong>{%if totalBasket < freeShippingMinPrice.value %}{{shippingPrice.value}} DT{% else %}Gratuite{% endif %}</strong></td>
                                             </tr>
+                                            {% if app.session.has('codepromo_id') %}
+                                                <tr>
+                                                    <th>Promotion</th>
+                                                    <td><span style="color:green;font-weight:600;" >-{{app.session.get('codepromo_percent')}}%</span></td>
+                                                </tr>
+                                            {% endif %}
                                             <tr class="order_total">
                                                 <th>Totale</th>
-                                                <td><strong>{%if totalBasket < freeShippingMinPrice.value %}{{totalBasket + shippingPrice.value}}{% else %}{{totalBasket}}{% endif %} DT</strong></td>
+                                                <td>
+                                                    <strong>
+                                                    {% if totalBasket < freeShippingMinPrice.value %}{% set totalBasket = totalBasket + shippingPrice.value %}{% endif %} 
+                                                    {% if app.session.has('codepromo_id') %}<strike style="color:red;">{{totalBasket}}</strike> {{totalBasket - ((totalBasket * app.session.get('codepromo_percent'))/100) |round(1, 'ceil') }}{%else%}{{totalBasket}}{%endif%} DT
+                                                    </strong>
+                                                </td>
                                             </tr>
                                         </tfoot>
                                     </table>

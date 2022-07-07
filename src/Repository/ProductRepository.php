@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Product;
+use DateInterval;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -59,6 +60,22 @@ class ProductRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * $minOrMax could be 'min' or 'max'
+     */
+    public function findMaxOrMinPriceByName(string $minOrMax, $searchedWord){ 
+        $order = $minOrMax === 'min' ? 'ASC' : 'DESC'; 
+        
+        return $this->findBySearchedWord($searchedWord)
+                    ->select(ProductRepository::PRICE_TTC_GAIN_SQL . ' as price, MAX(' . ProductRepository::PRICE_TTC_GAIN_SQL . ') AS HIDDEN max_score')
+                    ->groupBy('p')
+                    ->setMaxResults(1)
+                    ->orderBy('max_score', $order)
+                    ->getQuery()
+                    ->getResult();
+
+    }
+
 
     public function findByCategoriesAndPriceRange($categoryId, $minPrice, $maxPrice, $priceOrder){
         $qb = $this->createQueryBuilder("p")
@@ -73,6 +90,72 @@ class ProductRepository extends ServiceEntityRepository
         return $qb;
 
     }
+
+    public function findByNameAndPriceRange($searchedWord, $minPrice, $maxPrice, $priceOrder){
+        $qb = $this->findBySearchedWord($searchedWord, $minPrice, $maxPrice)
+                    ->andWhere(ProductRepository::PRICE_TTC_GAIN_SQL . ' >= :minPrice AND ' . ProductRepository::PRICE_TTC_GAIN_SQL . ' <= :maxPrice')
+                    ->groupBy('p');
+                    if($priceOrder){
+                        $qb->orderBy(ProductRepository::PRICE_TTC_GAIN_SQL, $priceOrder);
+                    }else{
+                        $qb->orderBy('p.createdAt', 'DESC');
+                    }
+                   
+        return $qb;
+
+    }
+
+    public function findByInPromoNow($minPrice, $maxPrice, $priceOrder){
+        $now = new \DateTime();
+        $qb = $this->createQueryBuilder("p")
+                    ->join('p.promos','pr')
+                    ->where('pr.isEnabled = true AND pr.startsAt <:now and pr.expiresAt > :now')
+                    ->andWhere(ProductRepository::PRICE_TTC_GAIN_SQL . ' >= :minPrice AND ' . ProductRepository::PRICE_TTC_GAIN_SQL . ' <= :maxPrice')
+                    ->setParameters(['now' => $now, 'minPrice' => $minPrice, 'maxPrice' => $maxPrice])
+                    ->groupBy('p');
+                    if($priceOrder){
+                        $qb->orderBy(ProductRepository::PRICE_TTC_GAIN_SQL, $priceOrder);
+                    }else{
+                        $qb->orderBy('p.createdAt', 'DESC');
+                    }
+
+        return $qb;
+    }
+
+    public function findProductCreatedSinceXDays($xDays = 15, $minPrice, $maxPrice, $priceOrder){
+        $nowSubXDays = new \DateTime();
+        $xDays = "P" . $xDays . "D";
+        $nowSubXDays->sub(new \DateInterval($xDays)); 
+        $qb = $this->createQueryBuilder("p")
+                    ->where('p.createdAt >= :nowSubXDays')
+                    ->andWhere(ProductRepository::PRICE_TTC_GAIN_SQL . ' >= :minPrice AND ' . ProductRepository::PRICE_TTC_GAIN_SQL . ' <= :maxPrice')
+                    ->setParameters(['nowSubXDays' => $nowSubXDays, 'minPrice' => $minPrice, 'maxPrice' => $maxPrice])
+                    ->groupBy('p');
+                    if($priceOrder){
+                        $qb->orderBy(ProductRepository::PRICE_TTC_GAIN_SQL, $priceOrder);
+                    }else{
+                        $qb->orderBy('p.createdAt', 'DESC');
+                    }
+                    
+        return $qb;
+    }
+    
+    public function findBySearchedWord($searchedWord, $minPrice = null, $maxPrice = null){
+        if ($minPrice === 0 || null !== $minPrice) {
+            $params['minPrice'] = $minPrice;
+        }
+        if (null != $maxPrice) {
+            $params['maxPrice'] = $maxPrice;
+        }
+        $params['name'] = '%'. strtoupper($searchedWord)  . '%';
+       
+        $qb = $this->createQueryBuilder("p")
+                    ->where('p.name LIKE UPPER(:name)')
+                    ->setParameters($params);
+                  
+        return $qb;
+    }
+
 
     // /**
     //  * @return Product[] Returns an array of Product objects

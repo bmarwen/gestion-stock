@@ -14,7 +14,7 @@
                     <h1>Para el jinene</h1>
                 </div>
                 <div class="col-md-5"></div>
-                <div class="col-md-1"><h1>Facture</h1></div>
+                <div class="col-md-1"><h1>Facture #{{"now"|date("Ym")}}{{ "%05d" |format(command.id) }}</h1></div>
             </div>
         </div>
     </div>
@@ -67,14 +67,26 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-md-8"></div>
-        <div class="col-md-4">
+        <div class="col-md-7"></div>
+        <div class="col-md-5">
             <table class="table table-bordered">
                 <thead>
+                    {% if command.codePromo is not null %}
+                        <tr>
+                            <th>Code Promo Appliqué</th>
+                            <th>
+                                <span class="boldandsize16" style="color:green;"> -{{command.codePromo.percent}}%</span>
+                            </th>
+                        </tr>
+                     {% endif %} 
                     <tr>
                         <th>Total commande TTC (dt)</th>
                         <th>
-                            {{ totalCmd }}
+                        {% if command.codePromo is not null %}
+                            <strike>{{totalCmd}}</strike> {{(totalCmd - (totalCmd * command.codePromo.percent)/100) |round(1, 'ceil')}}
+                        {%else%}
+                            {{totalCmd}}
+                        {%endif%}
                         </th>
                     </tr>
                 </thead>

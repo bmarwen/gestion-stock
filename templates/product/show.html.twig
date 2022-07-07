@@ -17,7 +17,7 @@
             </tr>
             <tr>
                 <th>Prix (Dinard)</th>
-                <td>{{ product.price }}0</td>
+                <td>{{ product.price |round(1, 'ceil') }}</td>
             </tr>
             <tr>
                 <th>Prix unitaire hors taxe (Dinard)</th>

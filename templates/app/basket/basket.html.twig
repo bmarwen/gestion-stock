@@ -10,8 +10,18 @@
         <div class="cart-table-wrapper">
             <div class="container">
                 <div class="row">
+                    
                     {% set totalBasket = 0 %}
                     <div class="col-12">
+                        {% if app.flashes('success_apply_codepromo') %}
+                                <div class="alert alert-success">Code promo appliqué!</div>
+                        {% endif %}
+                        {% if app.flashes('error_apply_codepromo') %}
+                                <div class="alert alert-danger">Code promo inexistant/prix minimum non atteint</div>
+                        {% endif %}
+                        {% if app.flashes('warning_apply_codepromo') %}
+                                <div class="alert alert-warning">Code promo déjà appliqué</div>
+                        {% endif %}
                         {%if app.session.get('products') %}
                         <div class="table_desc">
                             <div class="table_page table-responsive">
@@ -55,12 +65,12 @@
                                                     {{  currentPrice }} DT
                                                     <span style="background-color:#EA2027;color:white;border-radius:15px;font-size:16px;font-weight:bold;padding:2px;">-{{productsFromDb[product.id].currentPromo.pourcent}}%</span>
                                             {%else%}
-                                                    <br>{{ product.price }} DT
+                                                    {{ product.price }} DT
                                             {%endif%}
                                             
                                             </td>
                                             <td class="product_quantity"><label>Quantité</label><input min="1" max="100" value="{{product.qty}}" type="number" id="qty-{{product.id}}" data-product-id="{{product.id}}" ></td>
-                                            <td class="product_total">
+                                            <td class="product-price">
                                             {{product.qty * currentPrice }} DT
                                             </td>
                                         </tr> <!-- End Cart Single Item-->
@@ -85,14 +95,22 @@
                 {% if app.session.get('products') %}
                 <div class="row">
                     <div class="col-lg-6 col-md-6">
-                        {#<div class="coupon_code left">
-                            <h3>Coupon</h3>
+                        <div class="coupon_code left">
+                            <h3>Code promotion</h3>
+                            {% if not app.session.has('codepromo_id') %}
+                                <div class="coupon_inner">
+                                    <p>Insérer votre code promotion</p>
+                                    <form method="POST" action="{{path('basket_apply_code_promo')}}">
+                                        <input placeholder="Code promo" name="codepromo" type="text">
+                                        <button type="submit">Appliquer</button>
+                                    </form>
+                                </div>
+                            {% else %} 
                             <div class="coupon_inner">
-                                <p>Enter your coupon code if you have one.</p>
-                                <input placeholder="Coupon code" type="text">
-                                <button type="submit">Apply coupon</button>
-                            </div>
-                        </div>#}
+                                <p style="font-size:17px;">Promotion appliquée: <span style="color:green;font-weight:600;" >-{{app.session.get('codepromo_percent')}}%</span></p> 
+                            </div>  
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="col-lg-6 col-md-6">
                         <div class="coupon_code right">
@@ -108,7 +126,10 @@
                                 </div>
                                 <div class="cart_subtotal">
                                     <p>Totale</p>
-                                    <p class="cart_amount">{%if totalBasket < freeShippingMinPrice.value %}{{totalBasket + shippingPrice.value}}{% else %}{{totalBasket}}{% endif %} DT</p>
+                                    <p class="cart_amount">
+                                        {% if totalBasket < freeShippingMinPrice.value %}{% set totalBasket = totalBasket + shippingPrice.value %}{% endif %} 
+                                        {% if app.session.has('codepromo_id') %}<strike style="color:red;">{{totalBasket}}</strike> {{totalBasket - ((totalBasket * app.session.get('codepromo_percent'))/100) |round(1, 'ceil') }}{%else%}{{totalBasket}}{%endif%} DT
+                                    </p>
                                 </div>
                                 <div class="checkout_btn">
                                     <a href="{{path('checkout_new')}}">Commander</a>

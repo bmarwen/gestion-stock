@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Code Promo{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-6">
+        <h1>Créer un code promo</h1>
+        <br>
+        {{ include('code_promo/_form.html.twig') }}
+    </div>
+</div>
+    <br>
+    <a href="{{ path('admin.code_promo_index') }}" class="btn btn-success">Retourner</a>
+{% endblock %}

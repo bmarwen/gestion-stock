@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier CodePromo{% endblock %}
+
+{% block body %}
+    <h1>Modifier Code promo</h1>
+    {{ include('code_promo/_form.html.twig', {'button_label': 'Modifier'}) }}
+
+    <div class="row mt-5 container">
+        <a href="{{ path('admin.code_promo_index') }}" class="btn btn-success mr-3">Retourner</a>
+        {{ include('code_promo/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

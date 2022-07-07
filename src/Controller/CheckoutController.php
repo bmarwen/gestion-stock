@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Application;
+use App\Entity\CodePromo;
 use App\Entity\CommandOnLine;
 use App\Entity\Product;
 use App\Form\CommandOnLineType;
@@ -64,10 +65,22 @@ class CheckoutController extends AbstractController
             if ($commandOnLine->getTotalCommand() <= $freeShippingMinPrice->getValue()) {
                 $shippingPriceCalculated = $shippingPrice->getValue();
             }
+            //gestion code promo
+            if ($session->has('codepromo_id')) {
+                $codePromoId = $session->get('codepromo_id');
+                $codePromo = $entityManager->getRepository(CodePromo::class)->findOneBy(['id' => $codePromoId]);
+                if(null != $codePromo && $codePromo->isValid()) {
+                    $commandOnLine->setCodePromo($codePromo);
+                    $codePromo->addCommandsOnLine($commandOnLine);
+                }
+            }
             $commandOnLine->setShippingPrice($shippingPriceCalculated);
             $entityManager->persist($commandOnLine);
+            $entityManager->persist($codePromo);
             $entityManager->flush();
-            $session->set('products',[]);
+            $session->remove('products');
+            $session->remove('codepromo_id');
+            $session->remove('codepromo_percent');
             return $this->redirectToRoute('checkout_finalized', ['id' => $commandOnLine->getId()], Response::HTTP_SEE_OTHER);
         }
 

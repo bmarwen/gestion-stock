@@ -66,10 +66,18 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-md-8"></div>
-        <div class="col-md-4">
+        <div class="col-md-7"></div>
+        <div class="col-md-5">
             <table class="table table-bordered">
                 <thead>
+                    {% if commandOnLine.codePromo is not null %}
+                        <tr>
+                            <th>Code Promo Appliqué</th>
+                            <th>
+                                <span class="boldandsize16" style="color:green;"> -{{commandOnLine.codePromo.percent}}%</span>
+                            </th>
+                        </tr>
+                     {% endif %} 
                     <tr>
                         <th>Frais de livraison (dt)</th>
                         <th>
@@ -79,7 +87,11 @@
                     <tr>
                         <th>Total commande TTC (dt)</th>
                         <th>
-                            {{ commandOnLine.totalCommand }}
+                        {% if commandOnLine.codePromo is not null %}
+                            <strike>{{commandOnLine.totalCommand}}</strike> {{(commandOnLine.totalCommand - (commandOnLine.totalCommand * commandOnLine.codePromo.percent)/100) |round(1, 'ceil')}}
+                        {%else%}
+                            {{commandOnLine.totalCommand}}
+                        {%endif%}
                         </th>
                     </tr>
                 </thead>

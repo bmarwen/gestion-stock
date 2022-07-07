@@ -1,0 +1,56 @@
+<table class="table table-striped">
+    <thead>
+        <tr >
+            <th scope="col">Vendu le</th>
+            <th scope="col">Client</th>
+            <th scope="col">Vendeur</th>
+            <th scope="col">Produits</th>
+            <th scope="col">Prix total</th>
+            <th scope="col">Montant reçu (dt)</th>
+            <th scope="col">Montant rendu (dt)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for command in commands %}
+        {% set total = 0 %}
+        <tr>
+            <td>{{command.createdAt |date('d-m-Y H:i')}}</td>
+            <td>{% if command.client is null %}X{%else%}<a target="_blank" href="{{path('admin.client_show',{'id':command.client.id})}}">{{command.client.lastname}} {{command.client.firstname}}</a>{%endif%}</td>
+            <td>{% if command.products[0]['productFromDb'].provider is null %}X{%else%}<a href="{{path('admin.provider_show',{'id':command.products[0].provider.id})}}">{{command.products[0].provider.lastname}} {{command.products[0].provider.firstname}}</a>{%endif%}</td>
+            <td> 
+             {# promo commande #}
+                {% if command.codePromo is not null %}
+                    <span class="boldandsize16" style="color:green;">Code Promo Appliqué : -{{command.codePromo.percent}}%</span>
+                     <hr>
+                {% endif %} 
+                <ul>
+                    {% for produit in command.products %}
+                        <li>
+                            <a target="_blank" href="{{path('admin.product_show',{'id':produit.id})}}">{{produit.name}}</a>
+                        </li>
+                        <li>Prix: <span class="boldandsize16">{{produit.price}}</span> dt</li>
+                        <li>Quantité: {{produit.howMany}} </li>
+                        {# promo produits#}
+                        {% if produit.promo != "0" %}
+                            <li>Promo: <span style="color:red;" class="boldandsize16">{{produit.promo}}%</span> </li>
+                            <li>Prix après promo: <span class="boldandsize16">{{produit.price - (produit.promo * produit.price/100) |round(1, 'floor')}}</span> dt</li>
+                            {% set total = total + (produit.price - (produit.promo * produit.price/100))* produit.howMany %}
+                        {% else %}
+                            {% set total = total + produit.price * produit.howMany %}    
+                        {% endif %} 
+                        {% if not loop.last %}
+                            <hr>
+                        {% endif %}          
+                    {% endfor %}
+                </ul>
+                
+               
+            </td>
+            <td class="boldandsize16" >{% if command.codePromo is not null %}<strike style="color:red;">{{total |round(1, 'ceil')}}</strike> {{(total - (total * command.codePromo.percent)/100) |round(1, 'ceil')}}{% else %}{{total |round(2, 'ceil')}}{% endif %}</td>
+            <td class="boldandsize16">{{command.moneyReceivedByTheClient}}</td>
+            <td class="boldandsize16">{{command.moneyReturnedToTheClient}}</td>
+        </tr>
+        {% set totalAllCommands = totalAllCommands + total %}
+        {% endfor %}
+    </tbody>
+</table>  

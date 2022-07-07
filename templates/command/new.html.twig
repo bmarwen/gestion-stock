@@ -13,7 +13,7 @@
 
 {% block body %}
 <div class="row">
-    <div class="col-md-5">
+    <div class="col-md-4">
         <h1>Création d'une commande</h1>
         <br>
         {% if app.request.get('success_creation') %}
@@ -21,7 +21,7 @@
         {% endif %}
         {{ include('command/_form.html.twig') }}
     </div>
-    <div class="col-md-2"></div>
+    <div class="col-md-3"></div>
     <div class="col-md-5">
         <div class="row">
             <div class="col-md-12">
@@ -64,15 +64,34 @@
                 <div class="row">
                     <div class="col-md-6 form-group">
                         <label for="moneyreceived">Montant reçu (Dinard)</label>
-                        <input class="form-control" type="number" min="0" name="moneyreceived" id="moneyreceived" />
+                        <input class="form-control" type="number" min="0" name="moneyreceived" id="moneyreceived" required="required"/>
                     </div>
                     <div class="col-md-6 form-group">
                         <label for="moneyreturned">Montant retourner (Dinard)</label>
-                        <input class="form-control" type="number" name="moneyreturned" id="moneyreturned"   />
+                        <input class="form-control" type="number" name="moneyreturned" id="moneyreturned"  required="required" />
                     </div>
                 </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4 form-group">
+                        <fieldset>
+                        <label for="codepromo">Appliquer code promo (optionnel)</label>
+                        <input class="form-control" type="text" name="codepromo" id="codepromo" />
+                        <button id="validateCodePromo" style="margin-top:10%;" class="btn btn-warning"><span class="font-weight-bold">{{ button_label|default('Appliquer') }}</span></button>
+                        </fieldset>
+                    </div>
+                    <div class="col-md-4">
+                        
+                        <span id="codePromoSuccess" style="margin-left:10px;color:green;font-weight:600;" class="hidden" >Code Appliqué</span>
+                        <span id="codePromoError" style="margin-left:10px;color:red;font-weight:600;" class="hidden" >Code Erroné</span>
+                    </div>
+                </div>
+                <hr>
+                <br>
+                <br>
+                <br>
                 <button id="validateBasket" class="btn btn-primary btn-xl mb-3"><span class="font-weight-bold">{{ button_label|default('Valider') }}</span></button>
-                <button id="emptyBasketBtn" class="btn btn-warning btn-xl mb-3"><span class="font-weight-bold">{{ button_label|default('Annuler') }}</span></button>
+                <button id="emptyBasketBtn" class="btn btn-default btn-xl mb-3"><span class="font-weight-bold">{{ button_label|default('Annuler') }}</span></button>
             </div>
 
         </div>
@@ -85,15 +104,17 @@
     <script>
         const heightOfSelect = '600px';
         let productsInBasketsSize = 0;
-        let clientUrl = '/api/clients/';
         let howManyProducts = [];
         let remiseApplied = false;
+        let codePromoHydraId = '';
+        let codePromoHydraPourcentage = 0;
         $(document).ready(function() {
             //clearUrlFromParams()
             let selectProducts = $('#command_products')
             let selectClients = $('#command_client')
             let addProductBtn =  $('#addProductBtn')
             let validateBasketBtn = $('#validateBasket')
+            let validateCodePromoBtn = $('#validateCodePromo')
             let emptyBasketBtn = $('#emptyBasketBtn')
             emptyBasketBtn.addClass("hidden")
             let commentTextArea = document.getElementById('command_comment');
@@ -113,6 +134,7 @@
             handlingSelectProducts(selectProducts)
             addProductBtn.on('click',addProductToBasket)
             validateBasketBtn.on('click',submitBasket)
+            validateCodePromoBtn.on('click',verifyCodePromo)
             getProductData()
             document.getElementById('emptyBasketBtn').addEventListener('click',cancelBasketBtn);
             document.getElementById('tBasket').addEventListener('DOMSubtreeModified',basketRefreshWhenAction.bind(this,validateBasketBtn,emptyBasketBtn))
@@ -291,7 +313,11 @@
                 let price = parseFloat(tdPrice.text());
                 commandTotal += nbProduct * price;
             }
-            return commandTotal;
+            //if we have a codePromo activated..
+            if(codePromoHydraId != ''){
+                commandTotal = commandTotal - (commandTotal * codePromoHydraPourcentage)/100;
+            }
+            return parseFloat(commandTotal);
         }
 
 
@@ -315,9 +341,10 @@
             let data = {'products': null, 'client': null, 'comment': commentText};
             let selectClientVal = $('#command_client').val();
 
-            if(selectClientVal !== '-1'){ // known client
+            if (selectClientVal !== '-1') { // known client
                 data['client'] = clientUrl + parseInt(selectClientVal);
             }
+
             let products = [];
             //loop through tr
             let productsRows = $('#tBodyBasket').find('tr');
@@ -346,12 +373,51 @@
             data['moneyReceivedByTheClient'] = parseFloat(document.getElementById('moneyreceived').value)
             data['moneyReturnedToTheClient'] = parseFloat(document.getElementById('moneyreturned').value)
             let commandUrl = 'commands'
+            //code promo
+            if (codePromoHydraId != '') {
+                data['codePromo'] = codePromoHydraId;
+            }
             sendHttpRequest('POST', urlApi + commandUrl, data)
                 .then(response => {
                     updateStockProducts(response);
                 }).catch(err => {
                     console.log(err)
                 })
+        }
+
+        function codePromoNotGoodResponse(){
+            codePromoHydraId = "";
+            $('#codePromoError').removeClass('hidden')
+            let totalCommand = calculatePriceCommand();
+            updateTotalCommand(totalCommand);
+            cleanMoneyReceivedAndReturned();
+        }
+
+        function verifyCodePromo(){
+            $('#codePromoSuccess').addClass('hidden')
+            $('#codePromoError').addClass('hidden')
+            let codePromoVal = $('#codepromo').val();
+            if (codePromoVal !== '') {
+                sendHttpRequest('GET', urlApi + codePromoUrl + '?code=' + codePromoVal )
+                .then(response => {
+                    if (response['hydra:member'][0]['valid']) {
+                        codePromoHydraId = response['hydra:member'][0]['@id'];
+                        codePromoHydraPourcentage = response['hydra:member'][0]['percent'];
+                        $('#codePromoSuccess').removeClass('hidden')
+                        $('#codePromoSuccess').text('Code Appliqué ' + " -" + codePromoHydraPourcentage + "%" );
+                        let totalCommand = calculatePriceCommand();
+                        updateTotalCommand(totalCommand);
+                        cleanMoneyReceivedAndReturned();
+                    } else {
+                       codePromoNotGoodResponse();
+                    }
+                }).catch(err => {
+                    codePromoNotGoodResponse();
+                })
+            } else {
+                alert("Code promo vide");
+            }
+            
         }
 
 
@@ -472,7 +538,7 @@
             let moneyreceived = document.getElementById('moneyreceived');
             let moneyreturned = document.getElementById('moneyreturned');
             if (totalCommand > 0 && moneyreceived.value > 0) {
-                moneyreturned.value = parseFloat(moneyreceived.value - totalCommand).toFixed(2)
+                moneyreturned.value = Math.floor(parseFloat(moneyreceived.value - totalCommand).toFixed(2) * 10) / 10 
             }
         }
 

@@ -5,13 +5,11 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Security\LoginFormAuthenticator;
+use App\Service\MailerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -21,14 +19,19 @@ class RegistrationController extends AbstractController
 
     private $loginAuthenticator;
     private $guard;
+    private $mailerService;
+    private $emailSubject = 'Confirmation de votre inscription';
+    private $templateEmail = 'emails/register_confirm.html.twig';
 
     public function __construct(
         LoginFormAuthenticator $loginAuthenticator,
-        GuardAuthenticatorHandler $guard
+        GuardAuthenticatorHandler $guard,
+        MailerService $mailerService
     )
     {
         $this->loginAuthenticator = $loginAuthenticator;
         $this->guard = $guard;
+        $this->mailerService = $mailerService;
     }
 
     /**
@@ -60,6 +63,7 @@ class RegistrationController extends AbstractController
                 $this->loginAuthenticator,
                 'main'
             );
+            $this->mailerService->sendTemplatedEmail($user->getEmail(),$this->emailSubject, $user->getEmail(), $this->templateEmail);
             return $this->redirectToRoute('home');
         }
 

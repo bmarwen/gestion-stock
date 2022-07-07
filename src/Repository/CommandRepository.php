@@ -19,6 +19,24 @@ class CommandRepository extends ServiceEntityRepository
         parent::__construct($registry, Command::class);
     }
 
+    public function getCommandsOfWhichDay(\DateTime $whichDay)
+    {
+        $startOfWhichDay = new \DateTime($whichDay->setTime(0,0)->format('y-m-d H:i'));
+        $endOfWhichDay = new \DateTime($whichDay->setTime(23,59,59)->format('y-m-d H:i'));
+        
+        return $this->createQueryBuilder('c')
+            ->where('c.createdAt >= :startOfWhichDay and c.createdAt <= :endOfWhichDay')
+            ->setParameters(
+                [
+                    'startOfWhichDay' => $startOfWhichDay,
+                    'endOfWhichDay' => $endOfWhichDay
+                ])
+            ->orderBy('c.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Command[] Returns an array of Command objects
     //  */

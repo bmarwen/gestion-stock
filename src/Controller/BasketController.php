@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Category;
 use App\Entity\Product;
+use App\Repository\CodePromoRepository;
 use Pagerfanta\Pagerfanta;
 use App\Repository\ProductRepository;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
@@ -33,8 +34,8 @@ class BasketController extends AbstractController
     {   
         $session = $this->requestStack->getSession();
         $products = $session->get('products',[]);
-        
         $productsFromDb = [];
+        
         //add product entity to session
         foreach ($products as $product) {
             if ($prodFromDb = $productRepository->findOneById($product['id'])){
@@ -94,8 +95,9 @@ class BasketController extends AbstractController
     /**
      * @Route("/qty_update/{id}", name="_qty_update",options={"expose"=true})
      */
-    public function qtyBasketUpdateQty(Product $product = null, Request $request): Response
+    public function qtyBasketUpdateQty(Product $product = null, Request $request, CodePromoRepository $codePromoRepository): Response
     {   
+        
         $qty = (int)$request->query->get('qty',1);//1 for up 0 for down
         $session = $this->requestStack->getSession();
         $products = $session->get('products',[]);
@@ -104,10 +106,20 @@ class BasketController extends AbstractController
             if($indexProductInProductsBasket != -1){//exist
                 $products[$indexProductInProductsBasket]['qty'] = $qty;
                 $session->set('products',$products);
+                if ($session->has('codepromo_id')) { // gestion code promo on va l'eliminé s'il le prix min n'est plus respecté
+                    $codePromoId = $session->get('codepromo_id');
+                    $codePromoEntity = $codePromoRepository->findOneBy(['id' => $codePromoId]);
+                    if (null != $codePromoEntity && $codePromoEntity->isValid()) {
+                        if (!$this->isCodePromoRespectingMinPrice($products, $codePromoEntity)) {
+                            $session->remove('codepromo_percent');
+                            $session->remove('codepromo_id');    
+                        }
+                    }
+                }
                 return $this->redirectToRoute("basket_show");
             }
         }
-       
+        
         return $this->redirectToRoute("basket_show");
     }
 
@@ -131,8 +143,51 @@ class BasketController extends AbstractController
             }
             $session->set('products', $products);
         }
-       
+        
         return $this->redirectToRoute("basket_show");
+    }
+
+    /**
+     * @Route("/applyCodePromo", name="_apply_code_promo", methods="POST")
+     */
+    public function applyCodePromo(Request $request, CodePromoRepository $codePromoRepository){
+        $session = $this->requestStack->getSession();
+        $products = $session->get('products',[]);
+        
+        if ($session->has('codepromo_id')) {
+            $this->addFlash('warning_apply_codepromo', 'Code promo déjà appliqué');
+            return $this->redirectToRoute("basket_show");
+        }
+        if ($codePromo = $request->request->get('codepromo')) {
+            $codePromoEntity = $codePromoRepository->findOneBy(['code' => $codePromo]);
+            if (null != $codePromoEntity && $codePromoEntity->isValid()) {
+                //check price min of code promo
+                if (!$this->isCodePromoRespectingMinPrice($products, $codePromoEntity)) {
+                    $session->remove('codepromo_percent');
+                    $session->remove('codepromo_id');
+                    $this->addFlash('error_apply_codepromo', 'Code promo invalide');
+                    return $this->redirectToRoute("basket_show");
+                }
+                
+                $this->addFlash('success_apply_codepromo', 'Code promo Appliqué');
+                $session->set('codepromo_percent', $codePromoEntity->getPercent());
+                $session->set('codepromo_id', $codePromoEntity->getId());
+                return $this->redirectToRoute("basket_show");
+            }
+        }
+        $this->addFlash('error_apply_codepromo', 'Code promo invalide');
+        return $this->redirectToRoute("basket_show");
+    }
+
+    private function isCodePromoRespectingMinPrice($products, $codePromoEntity) {
+        $totalBasket = 0;
+        foreach ($products as $product) {
+            $totalBasket += $product['price'] * $product['qty'];
+        }
+        if ($codePromoEntity->getMinPrice() >= $totalBasket) {
+            return false;
+        }
+        return true;
     }
 
     private function indexProductInProductsBasket($id, $products){

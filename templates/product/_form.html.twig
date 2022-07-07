@@ -22,7 +22,7 @@
     </div>
 </div>
 <br><br>
-    <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+    <button type="submit" class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
 {{ form_end(form) }}
 {% if product.bill is not null %}
 <br>

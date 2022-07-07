@@ -89,7 +89,7 @@ class AdminProductController extends AbstractController
                 ]);
             }
            
-            $this->getDoctrine()->getManager()->flush();
+            
             $this->addFlash('success', 'Article modifié avec succès');
             //remove this product from notification system
             $em = $this->getDoctrine()->getManager();

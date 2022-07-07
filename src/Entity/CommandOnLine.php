@@ -114,6 +114,12 @@ class CommandOnLine
      */
     private $updatedAt;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="CodePromo", inversedBy="commandsOnLine")
+     * @ORM\JoinColumn(name="code_promo_id", referencedColumnName="id")
+     */
+    private $codePromo;
+
     public function __construct()
     {
         $this->isContacted = false;
@@ -305,4 +311,24 @@ class CommandOnLine
     }
 
 
+
+    /**
+     * Get the value of codePromo
+     */ 
+    public function getCodePromo()
+    {
+        return $this->codePromo;
+    }
+
+    /**
+     * Set the value of codePromo
+     *
+     * @return  self
+     */ 
+    public function setCodePromo($codePromo)
+    {
+        $this->codePromo = $codePromo;
+
+        return $this;
+    }
 }

@@ -1,5 +1,6 @@
 const urlApi = "http://localhost/gestion-stock/public/api/";
-
+const codePromoUrl = "code_promos";
+const clientUrl = '/api/clients/';
 const sendHttpRequest = (method,url,data) => {
     const promise = new Promise((resolve,reject) => {
         const xhr = new XMLHttpRequest();

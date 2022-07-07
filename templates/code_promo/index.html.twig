@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+{% block title %}Liste des codes promos{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+
+{% block body %}
+    <div class="row flex mt-4 mb-4">
+        <a class="btn btn-primary" href="{{ path('admin.code_promo_new') }}">Ajouter un code promo</a>
+    </div>
+
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Créer le</th>
+                <th>Commence le</th>
+                <th>Expire le</th>
+                <th>Prix minimum (dt)</th>
+                <th>Activé ?</th>
+                <th>Pourcentage réduction</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for code_promo in code_promos %}
+            <tr>
+                <td>{{ code_promo.code }}</td>
+                <td>{{ code_promo.createdAt ? code_promo.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ code_promo.startsAt ? code_promo.startsAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ code_promo.expiresAt ? code_promo.expiresAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ code_promo.minPrice}}</td>
+                <td>{{ code_promo.isEnabled ? 'Oui' : 'Non' }}</td>
+                <td>{{ code_promo.percent }}%</td>
+                <td>
+                    <a href="{{ path('admin.code_promo_edit', {'id': code_promo.id}) }}" ><i class="fas fa-pencil-alt"></i></a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">Pas de code promos</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                "pagingType": "full_numbers",
+                "order": [[ 1, "asc" ]]
+            });
+        } );
+    </script>
+{% endblock %}

@@ -43,3 +43,11 @@ select{
 .logoMenu{
     color: #2ecc71;
 }
+
+.size19{
+    font-size:19px;
+}
+
+.boldandsize16{
+    font-weight:bold;font-weight:16px;
+}

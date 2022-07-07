@@ -4,10 +4,9 @@
 
 {% block body %}
     Prix avant promotion: <h1>{{ promo.product.price | round(1,'floor') }}</h1>
-    Prix après promotion: <h1>{{ promo.product.priceAfterPromotionIfExists | round(1,'floor') }}</h1>
-    Pourcentage :<br> <span style="font-size:40px;font-weight:bold;">{{ promo.pourcent }}</span> <span style="font-size:26px;font-weight:bold;">%</span>
+    Prix après promotion: <h1>{% if promo.product.priceAfterPromotionIfExists is null %}Promotion non disponible{%else%}{{ promo.product.priceAfterPromotionIfExists | round(1,'floor') }}{% endif %}</h1>
+    {% if promo.product.priceAfterPromotionIfExists is not null %}Pourcentage :<br> <span style="font-size:40px;font-weight:bold;">{{ promo.pourcent }}</span> <span style="font-size:26px;font-weight:bold;">%</span>{%endif%}
     {{ include('promo/_form.html.twig', {'button_label': 'Update'}) }}
-
     <div class="row mt-5 container">
         <a href="{{ path('admin.promo_index') }}" class="btn btn-success mr-3">Retourner</a>
     </div>

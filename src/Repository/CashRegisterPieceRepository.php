@@ -19,6 +19,21 @@ class CashRegisterPieceRepository extends ServiceEntityRepository
         parent::__construct($registry, CashRegisterPiece::class);
     }
 
+    /** 
+      * @return CashRegisterPiece[] Returns an array of CashRegister objects
+      */
+      public function getWhichDayBeforeTheWhichdaySelectedInCashRegister(\DateTime $whichdaySelected)
+      {
+          return $this->createQueryBuilder('c')
+              ->select('MAX(c.whichday) as whichdayBefore')
+              ->where('c.whichday < :whichdaySelected')
+              ->setParameter('whichdaySelected', $whichdaySelected)
+              ->setMaxResults(1)
+              ->getQuery()
+              ->getResult()
+          ;
+      }
+
     // /**
     //  * @return CashRegisterPiece[] Returns an array of CashRegisterPiece objects
     //  */

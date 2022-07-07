@@ -3,10 +3,21 @@
 namespace App\Entity;
 
 use App\Repository\CodePromoRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=CodePromoRepository::class)
+ * @UniqueEntity("code")
+ * @ApiResource()
+ * @ApiFilter(SearchFilter::class, properties = {"code" : "exact"})
+ * @ApiFilter(BooleanFilter::class, properties={"isValid"})
  */
 class CodePromo
 {
@@ -53,10 +64,37 @@ class CodePromo
     private $percent;
 
     /**
-     * @ORM\ManyToOne(targetEntity=CodePromoType::class, inversedBy="codePromos")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="float", nullable=false)
      */
-    private $type;
+    private $minPrice;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Command", mappedBy="codePromo")
+     */
+    private $commands;
+
+    /**
+     * @ORM\OneToMany(targetEntity="CommandOnLine", mappedBy="codePromo")
+     */
+    private $commandsOnLine;
+
+    public function __construct()
+    {
+        $this->commands = new ArrayCollection();
+        $this->commandsOnLine = new ArrayCollection();
+        $this->createdAt = new \DateTime();
+        $this->minPrice = -1;
+    }
+
+    public function isValid()
+    {
+        $now = new \DateTime();
+        if($this->getIsEnabled() && $this->getStartsAt() < $now && $this->getExpiresAt() > $now){
+            return true;
+        }
+        return false;
+    }
+
 
     public function getId(): ?int
     {
@@ -147,14 +185,88 @@ class CodePromo
         return $this;
     }
 
-    public function getType(): ?CodePromoType
+    
+
+    /**
+     * Get the value of commands
+     */ 
+    public function getCommands()
     {
-        return $this->type;
+        return $this->commands;
     }
 
-    public function setType(?CodePromoType $type): self
+    /**
+     * Add the value of commands
+     *
+     * @return  self
+     */ 
+    public function addCommands($command)
     {
-        $this->type = $type;
+        $this->commands[] = $command;
+
+        return $this;
+    }
+
+    /**
+     * Remove the value of commands
+     *
+     * @return  self
+     */ 
+    public function removeCommands($command)
+    {
+        unset($this->commands[$command]);
+
+        return $this;
+    }
+
+    /**
+     * Get the value of commandsOnLine
+     */ 
+    public function getCommandsOnLine()
+    {
+        return $this->commandsOnLine;
+    }
+
+    /**
+     * Add the value of commandsOnLine
+     *
+     * @return  self
+     */ 
+    public function addCommandsOnLine($commandOnLine)
+    {
+        $this->commandsOnLine[] = $commandOnLine;
+
+        return $this;
+    }
+
+    /**
+     * Remove the value of commandsOnLine
+     *
+     * @return  self
+     */ 
+    public function removeCommandsOnLine($commandOnLine)
+    {
+        unset($this->commandsOnLine[$commandOnLine]);
+
+        return $this;
+    }
+
+    /**
+     * Get the value of minPrice
+     */ 
+    public function getMinPrice()
+    {
+        return $this->minPrice;
+    }
+
+    /**
+     * Set the value of minPrice
+     *
+     * @return  self
+     */ 
+    public function setMinPrice($minPrice)
+    {
+        $this->minPrice = $minPrice;
 
         return $this;
     }

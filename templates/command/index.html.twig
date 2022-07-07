@@ -29,6 +29,10 @@
             <tr>
                 <td>{{ command.createdAt ? command.createdAt|date('Y-m-d H:i:s') : '' }}</td>
                 <td>
+                    {# promo commande #}
+                    {% if command.codePromo is not null %}
+                        <span class="boldandsize16" style="color:green;">Code Promo Appliqué : -{{command.codePromo.percent}}%</span><br>
+                    {% endif %}
                     {% for product in command.products %}
                         {% if product.promo is defined and product.promo is not empty and product.promo != 0 %}
                             {% set productPrice = product.price - (product.price * product.promo)/100 %}
@@ -43,7 +47,7 @@
                     {% endfor %}
                 </td>
                 <td>{{ command.comment|length > 75 ? command.comment|slice(0, 75) ~ '...' : command.comment }}</td>
-                <td class="text-center">{{ totalCommand }}</td>
+                <td class="text-center">{% if command.codePromo is not null %}<strike style="color:red;">{{totalCommand |round(1, 'ceil')}}</strike> {{(totalCommand - (totalCommand * command.codePromo.percent)/100) |round(1, 'ceil')}}{%else%}{{ totalCommand|round(1, 'ceil') }}{%endif%}</td>
                 <td><a href="{{ path('admin.generate_novice',{'id': command.id })}}" target="_blank"><span class="status-p bg-primary">Générer facture</span></a></td>
             </tr>
         {% else %}

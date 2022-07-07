@@ -17,8 +17,15 @@ class PromoType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $date = new \DateTime();
-        $date->add(new \DateInterval('P7D'));
+        if ($builder->getData()->getId()) {
+            $promo = $builder->getData();
+            $startsAt = $promo->getStartsAt();
+            $expiresAt = $promo->getExpiresAt();
+        } else {
+            $startsAt = new \DateTime();
+            $expiresAt = new \DateTime();
+            $expiresAt->add(new \DateInterval('P7D'));
+        }
 
         $builder
             ->add('product', EntityType::class, [
@@ -35,13 +42,13 @@ class PromoType extends AbstractType
             ->add('startsAt',DateTimeType::class,[
                 'widget' => 'single_text',
                     // this is actually the default format for single_text
-                'data' => new \DateTime(),
+                'data' => $startsAt,
                 'label' => 'Commence le',
             ])
             ->add('expiresAt',DateTimeType::class,[
                 'widget' => 'single_text',
                     // this is actually the default format for single_text
-                'data' => $date,
+                'data' => $expiresAt,
                 'label' => 'Expire le',
             ])
             ->add('isEnabled', ChoiceType::class, [

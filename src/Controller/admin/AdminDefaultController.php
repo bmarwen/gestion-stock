@@ -15,7 +15,7 @@ class AdminDefaultController extends AbstractController {
      * @return Response
      */
     public function index() : Response{
-        return $this->render('pages/index.html.twig');
+        return $this->redirectToRoute('admin.cash_register_index');
     }
 
 }

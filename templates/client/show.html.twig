@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Client {{ client.name }}{% endblock %}
+{% block title %}Client {{ client.lastname }}{{ client.firstname }}{% endblock %}
 {% block url %}{{ path('admin.client_show', {'id' : client.id }) }}{% endblock %}
 
 {% block body %}

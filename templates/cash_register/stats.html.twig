@@ -1,0 +1,66 @@
+<br><br>
+{% set totalCaisse = 0 %}
+<table class="table table-striped" style="font-size:18px;" >
+    <thead>
+        <tr>
+            <th scope="col">Articles vendus</th>
+            <th>{{totalAllCommands | number_format(2) }}</th> 
+        <tr>
+        <tr>
+            <th>Autres créances/dépenses</th>
+            <th>
+               {{total_expenses | number_format(2) }} 
+            </tr>
+        <tr>
+        <tr>
+            <th>Total montant rendu</th>
+            <th>
+                {{totalMoneyRendered | number_format(2) }} 
+            </tr>
+        <tr>
+        <tr>
+            <th>Déjà en caisse</th>
+            <th>
+                {{restInRegisterOfPrevDay | number_format(2) }} 
+            </tr>
+        <tr>
+        <tr>
+            <th>Total caisse</th>
+            <th>{{totalAllCommands + total_expenses + restInRegisterOfPrevDay  | number_format(2) }}</th>
+        <tr>
+            <th scope="col">Cloture de caisse</th>
+            <th>
+                {% for piece in cash_register_piece_monnaies %}
+                    {% set totalCaisse = totalCaisse + piece.moneyPiece * piece.howMany %}
+                {% endfor %}
+                {{ totalCaisse + total_expenses + restInRegisterOfPrevDay - totalMoneyRendered| number_format(2)  }}
+            </th>
+        <tr>
+        <tr>{% set ecart = totalCaisse - totalAllCommands - totalMoneyRendered %}
+            <th scope="col">Ecart</th><th>{{ ecart | number_format(2) }} </th>
+        </tr>
+        <tr>
+            <th scope="col">Versement</th><th>{{versement.versementBank | number_format(2)}}</th>
+        </tr>
+        <tr>
+            <th scope="col">Reste Caisse</th><th>{{totalAllCommands + total_expenses + restInRegisterOfPrevDay - versement.versementBank | number_format(2) }}</th>
+        </tr>
+    </thead>   
+</table> 
+<br><br>
+<hr>
+{% if not versement_exist %}
+    {{ form_start(form_versement, {'action': path('admin.set_versement_value')~"?whichday="~whichday|date('Y-m-d')}) }}
+    {{ form_errors(form_versement) }}
+    <div class="row">
+        <div class="col-md-6">
+                {{ form_row(form_versement.versementBank) }}
+        </div>
+        <input type="hidden" name="_whichday" value="{{whichday | date('Y-m-d')}}" />
+    </div>
+    <button type="submit" class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+    {{ form_end(form_versement) }}
+    </form>
+{% else %}
+    <h5>Versement déjà renseigné!</h5>
+{% endif %}

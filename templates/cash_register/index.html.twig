@@ -2,7 +2,9 @@
 
 {% block title %}Caisse{% endblock %}
 
-{% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">
+{% endblock %}
 {% block body %}
 <h1>Caisse pour le {{whichday |date('d-m-Y')}}</h1>
 <br>
@@ -17,52 +19,55 @@
         </form>
     </div>
 </div>
-
 <br>
-<div class="row">
-    <div class="col-md-6">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">Piece (dinard)</th>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Total (dinard)</th>
-                </tr>
-            </thead>
-            <form method="POST" action="{{path('admin.update_piece_monnaie')}}">
-                <input type="hidden" name="_whichday" value="{{whichday | date('Y-m-d')}}" />
-                <tbody>
-                    {% for piece in piece_monnaie %}
-                        {% set howMany = 0 %}
-                        {% for cash_register_piece_monnaie in cash_register_piece_monnaies %}
-                            {% if cash_register_piece_monnaie.moneyPiece == piece %}
-                                {% set howMany = cash_register_piece_monnaie.howMany %}
-                            {% endif %}
-                        {% endfor %}
-                        <tr>
-                            <td>{{piece}}</td>
-                            <td>
-                                <input type="number" min="0" class="form-control" style="width:25%;" required="required" value="{{howMany}}" name="piece_{{piece}}" id="piece_{{ loop.index }}" data-index="{{ loop.index }}" data-piece="{{ piece }}" />
-                            </td>
-                            <td>
-                                <span style="font-weight:bold;" id="total_piece_{{ loop.index }}">0.00</span>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    <tr>
-                        <td><button type="submit" class="btn btn-warning" >Appliquer</button></td>
-                        <td style="font-weight:bold;text-align:right;">TOTAL</td>
-                        <td style="font-weight:bold;" id="total_piece_monnaie">0.00</td>
-                    </tr>
-                </tbody>
-            </form>
-        </table>
+
+
+
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link active size19" data-toggle="tab" href="#command" >Articles vendus</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link size19" href="#other_expenses" data-toggle="tab" >Autres créances/dépenses</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link size19" href="#piece_monnaie" data-toggle="tab" >Pièce de monnaie</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link size19" href="#stats" data-toggle="tab" >Statistiques</a>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <div id="command" class="tab-pane show fade in active">
+    <div class="row">
+        <div class="col-md-12">
+            {% include 'cash_register/command.html.twig'%}
+        </div>
     </div>
-    <div class="col-md-6">No idea for now.. may be stats</div>
 </div>
-<hr>
-<div class="row">
-    <div class="col-md-12">Here we will have the list of products sold in paraElJinene</div>
+<div id="other_expenses" class="tab-pane fade">
+    <div class="row">
+        <div class="col-md-12">
+            {% include 'cash_register/expenses.html.twig' %}
+        </div>
+    </div>
+</div>
+  <div id="piece_monnaie" class="tab-pane fade">
+        <div class="row">
+            <div class="col-md-12">
+                {% include 'cash_register/piece_monnaie.html.twig' %}
+            </div>
+        </div>
+    </div>
+    <div id="stats" class="tab-pane fade">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                {% include 'cash_register/stats.html.twig' %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 {% block javascripts %}

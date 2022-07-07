@@ -10,13 +10,19 @@
         <div class="container">
             <div class="row flex-column flex-lg-row">
                  {% if productsPager is empty %}
-                        <center><h2 style="color:#2ecc71;">Cette catégorie est vide! </h2></center>
+                        <center>
+                            <h2 style="color:#2ecc71;">Aucun résultat !</h2>
+                        </center>
                  {% endif %}
                 <div class="col-lg-3">
                     <!-- Start Sidebar Area -->
                     <div class="siderbar-section">
+                        {% if categorie is defined %}
+                            <div class="sidebar-single-widget">
+                                <h3>Catégorie {{categorie.name}}</h3>
+                            </div>
+                        {% endif %}
                         <!-- Start Single Sidebar Widget -->
-                        {% if productsPager is not empty %}
                             <div class="sidebar-single-widget">
                                 <form id="form_price_filter" method="GET" action="{{ path(app.request.attributes.get('_route'),
         app.request.attributes.get('_route_params')) }}?page={{app.request.get('page')}}" >
@@ -31,7 +37,7 @@
                                     </div>
                                 </form>
                             </div> <!-- End Single Sidebar Widget -->
-                        {% endif %}
+                        
                     </div> <!-- End Sidebar Area -->
                 </div>
                 <div class="col-lg-9">
@@ -43,12 +49,6 @@
                                 <!-- Start Sort Wrapper Box -->
                                 <div class="sort-box d-flex justify-content-between align-items-md-center align-items-start flex-md-row flex-column">
                                     <!-- Start Sort tab Button -->
-                                    <div class="sort-tablist">
-                                        <ul class="tablist nav sort-tab-btn">
-                                            <li><a class="nav-link active" data-toggle="tab" href="#layout-3-grid"><img src="assets/images/icon/bkg_grid.png" alt=""></a></li>
-                                            <li><a class="nav-link" data-toggle="tab" href="#layout-list"><img src="assets/images/icon/bkg_list.png" alt=""></a></li>
-                                        </ul>
-                                    </div> <!-- End Sort tab Button -->
                                     {% if productsPager is not empty %}
                                         <div class="tab-pane sort-layout-single" id="layout-list">
                                             {{ pagerfanta(productsPager) }}
@@ -79,7 +79,7 @@
                                         <!-- Start Grid View Product -->
                                         <div class="tab-pane active show sort-layout-single" id="layout-3-grid">
                                             <div class="row">
-                                            {% for product in productsPager |filter(p => p.howMany > 0) %}
+                                            {% for product in productsPager %}
                                                 <div class="col-xl-4 col-sm-6 col-12">
                                                     {% include 'app/default/includes/productShow.html.twig' %}
                                                 </div>
@@ -104,49 +104,54 @@
 {% endblock %}
 {% block javascripts %}
     <script>
+        {% set currentPriceRangeMin = priceRangeMin  %}
+        {% set currentPriceRangeMax = priceRangeMax %}
+        {% if app.request.get('minPrice') is not null %}{% set currentPriceRangeMin = app.request.get('minPrice') %}{% endif %}
+        {% if app.request.get('maxPrice') is not null %}{% set currentPriceRangeMax = app.request.get('maxPrice') %}{% endif %}
         /************************************************
         * Price Slider
         ***********************************************/
-        
-        $( "#slider-range" ).slider({
-            range: true,
-            min: {{priceRangeMin |round(0, 'floor') | number_format(0, '.', ',')}},
-            max: {{priceRangeMax |round(0, 'ceil') | number_format(0, '.', ',')}},
-            values: [ {{priceRangeMin |round(0, 'floor') | number_format(0, '.', ',')}}, {{priceRangeMax |round(0, 'ceil') | number_format(0, '.', ',')}} ],
-            slide: function( event, ui ) {
-                $( "#amount" ).val( ui.values[ 0 ] + " DT " + + ui.values[ 1 ] + " DT ");
-            }
-        });
-        $( "#amount" ).val($( "#slider-range" ).slider( "values", 0 ) + " DT " +
-            " - " + $( "#slider-range" ).slider( "values", 1 ) + " DT ");
+        $(document).ready(function(){
+            let searchedWord = {% if searchedWord is defined %}'&searchedWord=' + '{{searchedWord}}'{% else %}''{% endif %};
+            $( "#slider-range" ).slider({
+                range: true,
+                min: {{priceRangeMin |round(0, 'floor') | number_format(0, '.', ',')}},
+                max: {{priceRangeMax |round(0, 'ceil') | number_format(0, '.', ',')}},
+                values: [ {{currentPriceRangeMin |round(0, 'floor') | number_format(0, '.', ',')}}, {{currentPriceRangeMax |round(0, 'ceil') | number_format(0, '.', ',')}} ],
+                slide: function( event, ui ) {
+                    $( "#amount" ).val( ui.values[ 0 ] + " DT " + + ui.values[ 1 ] + " DT ");
+                }
+            });
+            $( "#amount" ).val($( "#slider-range" ).slider( "values", 0 ) + " DT " +
+                " - " + $( "#slider-range" ).slider( "values", 1 ) + " DT ");
 
-        $('#form_price_filter').submit(function(event){
-            let page = "?";
-            {% if app.request.get('page') %}
-                page = "?page={{app.request.get('page')}}&";
-            {% endif %}
-            event.preventDefault();
-            let newUrl = "{{ path(app.request.attributes.get('_route'),app.request.attributes.get('_route_params')) }}";
-            var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) ;
-            window.location = newLocation;
-        });
+            $('#form_price_filter').submit(function(event){
+                let page = "?";
+                {% if app.request.get('page') %}
+                    page = "?page={{app.request.get('page')}}&";
+                {% endif %}
+                event.preventDefault();
+                let newUrl = "{{ path(app.request.attributes.get('_route'),app.request.attributes.get('_route_params')) }}";
+                var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) ;
+                window.location = newLocation + searchedWord;
+            });
 
-        $('#sort').change(function(){
-            let page = "?";
-            {% if app.request.get('page') %}
-                page = "?page={{app.request.get('page')}}&";
-            {% endif %}
-            let newUrl = "{{ path(app.request.attributes.get('_route'),app.request.attributes.get('_route_params')) }}";
-            let priceOrder = $(this).val();
-            
-            if($(this).val() === 'asc'){
-                var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) + "&priceOrder="+priceOrder ;
-                window.location = newLocation;
-            }else{
-                var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) + "&priceOrder="+priceOrder;
-                window.location = newLocation;
-            }
+            $('#sort').change(function(){
+                let page = "?";
+                {% if app.request.get('page') %}
+                    page = "?page={{app.request.get('page')}}&";
+                {% endif %}
+                let newUrl = "{{ path(app.request.attributes.get('_route'),app.request.attributes.get('_route_params')) }}";
+                let priceOrder = $(this).val();
+                if($(this).val() === 'asc'){
+                    var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) + "&priceOrder="+priceOrder + searchedWord ;
+                    window.location = newLocation;
+                }else{
+                    var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) + "&priceOrder="+priceOrder + searchedWord;
+                    window.location = newLocation;
+                }
+            });
         });
-
+       
     </script>
 {% endblock %}

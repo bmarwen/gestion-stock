@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=CommandRepository::class)
  * @ApiResource()
+ * @ORM\HasLifecycleCallbacks()
  */
 class Command
 {
@@ -51,6 +52,12 @@ class Command
      */
     private $moneyReturnedToTheClient;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="CodePromo", inversedBy="commands")
+     * @ORM\JoinColumn(name="code_promo_id", referencedColumnName="id")
+     */
+    private $codePromo;
+
 
     public function __construct()
     {
@@ -58,6 +65,18 @@ class Command
         $this->moneyReturnedToTheClient = 0;
         $this->moneyReceivedByTheClient = 0;
     }
+    
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist(){ 
+        //we verify if code Promo is valid!
+        if ($this->codePromo != null && !$this->codePromo->isValid() ) {
+            $this->codePromo = null;
+        }
+    }
+
+    
 
     public function getId(): ?int
     {
@@ -136,4 +155,24 @@ class Command
         return $this;
     }
 
+
+    /**
+     * Get the value of codePromo
+     */ 
+    public function getCodePromo()
+    {
+        return $this->codePromo;
+    }
+
+    /**
+     * Set the value of codePromo
+     *
+     * @return  self
+     */ 
+    public function setCodePromo($codePromo)
+    {
+        $this->codePromo = $codePromo;
+
+        return $this;
+    }
 }

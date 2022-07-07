@@ -1,0 +1,50 @@
+<br>
+        <h3>Ajouter une Créance/Dépense</h3>
+        <br>
+            {{ form_start(form_expenses, {'action': path('admin.add_other_expense')~"?whichday="~whichday|date('Y-m-d')}) }}
+            {{ form_errors(form_expenses) }}
+            <div class="row">
+                <div class="col-md-6">
+                {{ form_row(form_expenses.name) }}
+                </div>
+                <div class="col-md-2">
+                {{ form_row(form_expenses.price) }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+            {{ form_end(form_expenses) }}
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            {% if other_expenses is empty %}
+                    <tr><td><h5>Aucune dépense enregistrée</h5></td></tr>
+            {% else %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Déscription</th>
+                        <th scope="col">Prix (DT)</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for other_expense in other_expenses %}
+                        <tr>
+                            <td>{{other_expense.name}}</td>
+                            <td>{{other_expense.price}}</td>
+                            <td>
+                                <form action="{{path('admin.remove_other_expense',{'id':other_expense.id })}}" method="POST">
+                                    <input type="hidden" name="_whichday" value="{{whichday | date('Y-m-d')}}" />
+                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    
+                </tbody>
+            </table>
+            {% endif %}
+        
