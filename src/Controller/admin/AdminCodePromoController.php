@@ -74,10 +74,14 @@ class AdminCodePromoController extends AbstractController
     public function delete(Request $request, CodePromo $codePromo, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$codePromo->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($codePromo);
-            $entityManager->flush();
+            if (null != $codePromo->getCommands() || null != $codePromo->getCommandsOnLine()) {
+                $this->addFlash('error', 'Erreur : Code promo ' . $codePromo->getCode() . ' est déjà utilisé dans des commandes.');
+            } else {
+                $entityManager->remove($codePromo);
+                $entityManager->flush();
+            }
         }
-
+        
         return $this->redirectToRoute('admin.code_promo_index', [], Response::HTTP_SEE_OTHER);
     }
 }

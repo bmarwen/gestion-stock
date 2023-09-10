@@ -19,6 +19,16 @@ class ApplicationRepository extends ServiceEntityRepository
         parent::__construct($registry, Application::class);
     }
 
+    public function nameStartsWith(string $name)
+    {
+        return $this->createQueryBuilder('app')
+            ->andWhere('app.name LIKE :val')
+            ->setParameter('val', $name . '%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Application[] Returns an array of Application objects
     //  */

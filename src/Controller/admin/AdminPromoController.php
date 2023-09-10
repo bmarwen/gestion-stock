@@ -2,6 +2,7 @@
 
 namespace App\Controller\admin;
 
+use App\Entity\Product;
 use App\Entity\Promo;
 use App\Form\PromoType;
 use App\Repository\PromoRepository;
@@ -35,18 +36,32 @@ class AdminPromoController extends AbstractController
         $promo = new Promo();
         $form = $this->createForm(PromoType::class, $promo);
         $form->handleRequest($request);
-
         if ($form->isSubmitted() && $form->isValid()) {
+            $idProduct = $request->request->get('command_products') ?? null;
+            if(null === $idProduct){
+                $form->addError(new FormError("Produit obligatoire"));
+                return $this->renderForm('promo/new.html.twig', [
+                    'promo' => $promo,
+                    'form' => $form,
+                ]);
+            }
+            $product = $entityManager->getRepository(Product::class)->findOneBy(['id' => $idProduct]); 
+            if(null === $product) {
+                $form->addError(new FormError("Produit n'existe pas."));
+                return $this->renderForm('promo/new.html.twig', [
+                    'promo' => $promo,
+                    'form' => $form,
+                ]);
+            }
             //check if the product has already an active promo
-            $product = $promo->getProduct();
-            if($product->getCurrentPromo()){
+            if ($product->getCurrentPromo()) {
                 $form->addError(new FormError('Ce produit a déjà une promotion en cours'));
                 return $this->renderForm('promo/new.html.twig', [
                     'promo' => $promo,
                     'form' => $form,
                 ]);
             }
-            
+            $promo->setProduct($product);
             $entityManager->persist($promo);
             $entityManager->flush();
 
@@ -64,11 +79,34 @@ class AdminPromoController extends AbstractController
      */
     public function edit(Request $request, Promo $promo, EntityManagerInterface $entityManager): Response
     {
-        $product = $promo->getProduct();
         $form = $this->createForm(PromoType::class, $promo);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
+            $idProduct = $request->request->get('command_products') ?? null;
+            if(null === $idProduct){
+                $form->addError(new FormError("Produit obligatoire"));
+                return $this->renderForm('promo/new.html.twig', [
+                    'promo' => $promo,
+                    'form' => $form,
+                ]);
+            }
+            $product = $entityManager->getRepository(Product::class)->findOneBy(['id' => $idProduct]); 
+            if(null === $product) {
+                $form->addError(new FormError("Produit n'existe pas."));
+                return $this->renderForm('promo/new.html.twig', [
+                    'promo' => $promo,
+                    'form' => $form,
+                ]);
+            }
+            //check if the product has already an active promo
+            if ($product->getCurrentPromo()) {
+                $form->addError(new FormError('Ce produit a déjà une promotion en cours'));
+                return $this->renderForm('promo/new.html.twig', [
+                    'promo' => $promo,
+                    'form' => $form,
+                ]);
+            }
             $promo->setProduct($product);
             $entityManager->flush();
 

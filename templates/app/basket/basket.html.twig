@@ -25,7 +25,7 @@
                         {%if app.session.get('products') %}
                         <div class="table_desc">
                             <div class="table_page table-responsive">
-                                <table >
+                                <table>
                                     <!-- Start Cart Table Head -->
                                     <thead>
                                         <tr>
@@ -59,14 +59,14 @@
                                             </td>
                                             <td class="product_name"><a href="{{path('product_show', {'id': product.id })}}">{{product.name}}</a></td>
                                             <td class="product-price">
-                                            {%if productsFromDb[product.id].currentPromo is not null%}
+                                            {% if productsFromDb[product.id].currentPromo is not null %}
                                                 <span>
                                                     <br><del class="product-default-price-off">{{product.price}}</del> 
                                                     {{  currentPrice }} DT
                                                     <span style="background-color:#EA2027;color:white;border-radius:15px;font-size:16px;font-weight:bold;padding:2px;">-{{productsFromDb[product.id].currentPromo.pourcent}}%</span>
-                                            {%else%}
+                                            {% else %}
                                                     {{ product.price }} DT
-                                            {%endif%}
+                                            {% endif %}
                                             
                                             </td>
                                             <td class="product_quantity"><label>Quantité</label><input min="1" max="100" value="{{product.qty}}" type="number" id="qty-{{product.id}}" data-product-id="{{product.id}}" ></td>
@@ -82,7 +82,7 @@
                         </div>
                         {% else %}
                             Ajouter un produit dans le panier en cliquant <a style="font-weight:600;" href="{{path('home')}}">ici</a>.
-                        {%endif%}
+                        {% endif %}
                         
                     </div>
                 </div>
@@ -149,7 +149,7 @@
        $("input[id^='qty-']").change(function(){
            let qty = $(this).val();
            let urlUpdateQty = Routing.generate('basket_qty_update', {'id' : $(this).data('product-id')});
-           window.location = urlUpdateQty + "?qty=" + parseInt(qty);
+           window.location = urlUpdateQty + "?qty=" + Math.abs(parseInt(qty));
        });
     </script>
 {% endblock %}

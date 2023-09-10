@@ -29,7 +29,6 @@ class AdminCommandOnLineController extends AbstractController
      */
     public function index(CommandOnLineRepository $commandOnLineRepository): Response
     {
-        
         return $this->render('command_on_line/index.html.twig', [
             'command_on_lines' => $commandOnLineRepository->findBy([],['createdAt' => 'ASC']),
             'statusCmd' => AdminCommandOnLineController::STATUS_CMD

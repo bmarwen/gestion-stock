@@ -120,6 +120,12 @@ class CommandOnLine
      */
     private $codePromo;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="commandsOnLine")
+     * @ORM\JoinColumn(name="buyer_id", referencedColumnName="id")
+     */
+    private $buyer;
+
     public function __construct()
     {
         $this->isContacted = false;
@@ -328,6 +334,26 @@ class CommandOnLine
     public function setCodePromo($codePromo)
     {
         $this->codePromo = $codePromo;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of buyer
+     */ 
+    public function getBuyer()
+    {
+        return $this->buyer;
+    }
+
+    /**
+     * Set the value of buyer
+     *
+     * @return  self
+     */ 
+    public function setBuyer($buyer)
+    {
+        $this->buyer = $buyer;
 
         return $this;
     }

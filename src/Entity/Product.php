@@ -15,13 +15,26 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 
 /**
  * @ORM\Entity(repositoryClass=ProductRepository::class)
  * @UniqueEntity("name")
  * @Vich\Uploadable()
- * @ApiResource(attributes={"pagination_items_per_page"=1000000})
+ * @ApiResource(
+ * attributes={"pagination_items_per_page"=1000000},
+ * collectionOperations={
+ *         "post"={"security"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add products."},
+ *          "get" = { "security" = "is_granted('ROLE_ADMIN')" },
+ *     },
+ * itemOperations={
+ *         "put" ={"security"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add products."},
+ *         "get" = { "security" = "is_granted('ROLE_ADMIN')" },
+ *     },
+ *     normalizationContext={"groups"={"user:read"}},
+ *     denormalizationContext={"groups"={"user:write"}},
+ * )
  * @ApiFilter(RangeFilter::class, properties = {"howMany"})
  * @ORM\HasLifecycleCallbacks
  */
@@ -31,6 +44,7 @@ class Product
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"user:read", "user:write"})
      */
     private $id;
 
@@ -40,6 +54,7 @@ class Product
      *      max = 125,
      *      maxMessage = "Le champ nom ne peut pas dépasser {{ limit }} caractéres"
      * )
+     * @Groups({"user:read", "user:write"})
      * @ORM\Column(type="string", length=125)
      */
     private $name;
@@ -57,24 +72,28 @@ class Product
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"user:read", "user:write"})
      */
     private $description;
 
     /**
      * @Assert\NotNull
      * @ORM\Column(type="integer")
+     * @Groups({"user:read", "user:write"})
      */
     private $howMany;
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="products")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"user:write"})
      */
     private $category;
 
     /**
      * @var File|null
      * @Vich\UploadableField(mapping="product_image", fileNameProperty="filename")
+     * @Groups({"user:read"})
      */
     private $imageFile;
 
@@ -86,6 +105,7 @@ class Product
 
     /**
      * @ORM\ManyToOne(targetEntity=Provider::class, inversedBy="products")
+     * @Groups({"user:write"})
      */
     private $provider;
 
@@ -95,6 +115,7 @@ class Product
      *      maxMessage = "Le champ code ne peut pas dépasser {{ limit }} caractéres"
      * )
      * @ORM\Column(type="string", length=35, nullable=false)
+     * @Groups({"user:read", "user:write"})
      */
     private $code;
 
@@ -104,11 +125,13 @@ class Product
      *      maxMessage = "Le champ mark ne peut pas dépasser {{ limit }} caractéres"
      * )
      * @ORM\Column(type="string", length=125, nullable=true)
+     * @Groups({"user:read", "user:write"})
      */
     private $mark;
 
     /**
      * @ORM\Column(type="float")
+     * @Groups({"user:read", "user:write"})
      */
     private $purchacePriceUnHt;
 
@@ -122,6 +145,7 @@ class Product
      *     message="Min 0%"
      * )
      * @ORM\Column(type="smallint")
+     * @Groups({"user:read", "user:write"})
      */
     private $tva;
 
@@ -135,21 +159,25 @@ class Product
      *     message="Min 0%"
      * )
      * @ORM\Column(type="smallint")
+     * @Groups({"user:read", "user:write"})
      */
     private $gain;
 
     /**
      * @ORM\Column(type="date", nullable=true)
+     * @Groups({"user:read", "user:write"})
      */
     private $expirationDate;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Bills::class, inversedBy="relation",cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity=Bills::class, inversedBy="products",cascade={"persist"})
+     * @Groups({"user:write"})
      */
     private $bill;
 
     /**
      * @ORM\OneToMany(targetEntity=Promo::class, mappedBy="product")
+     * @Groups({"user:write"})
      */
     private $promos;
 
@@ -221,7 +249,10 @@ class Product
 
         return $this;
     }
-
+    
+    /**
+     * @Groups({"admin:read"})
+     */
     public function getPrice(): ?float
     {
         $priceTTC = $this->purchacePriceUnHt + ($this->purchacePriceUnHt * $this->tva)/100;

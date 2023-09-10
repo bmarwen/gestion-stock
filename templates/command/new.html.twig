@@ -78,10 +78,10 @@
                         <label for="codepromo">Appliquer code promo (optionnel)</label>
                         <input class="form-control" type="text" name="codepromo" id="codepromo" />
                         <button id="validateCodePromo" style="margin-top:10%;" class="btn btn-warning"><span class="font-weight-bold">{{ button_label|default('Appliquer') }}</span></button>
+                        <button id="cancelCodePromo" style="margin-top:10%;" class="btn btn-default hidden"><span class="font-weight-bold">{{ button_label|default('Annuler') }}</span></button>
                         </fieldset>
                     </div>
                     <div class="col-md-4">
-                        
                         <span id="codePromoSuccess" style="margin-left:10px;color:green;font-weight:600;" class="hidden" >Code Appliqué</span>
                         <span id="codePromoError" style="margin-left:10px;color:red;font-weight:600;" class="hidden" >Code Erroné</span>
                     </div>
@@ -115,6 +115,8 @@
             let addProductBtn =  $('#addProductBtn')
             let validateBasketBtn = $('#validateBasket')
             let validateCodePromoBtn = $('#validateCodePromo')
+            let cancelCodePromoBtn = $('#cancelCodePromo')
+            
             let emptyBasketBtn = $('#emptyBasketBtn')
             emptyBasketBtn.addClass("hidden")
             let commentTextArea = document.getElementById('command_comment');
@@ -135,6 +137,7 @@
             addProductBtn.on('click',addProductToBasket)
             validateBasketBtn.on('click',submitBasket)
             validateCodePromoBtn.on('click',verifyCodePromo)
+            cancelCodePromoBtn.on('click',cancelCodePromo)
             getProductData()
             document.getElementById('emptyBasketBtn').addEventListener('click',cancelBasketBtn);
             document.getElementById('tBasket').addEventListener('DOMSubtreeModified',basketRefreshWhenAction.bind(this,validateBasketBtn,emptyBasketBtn))
@@ -392,7 +395,7 @@
             updateTotalCommand(totalCommand);
             cleanMoneyReceivedAndReturned();
         }
-
+        
         function verifyCodePromo(){
             $('#codePromoSuccess').addClass('hidden')
             $('#codePromoError').addClass('hidden')
@@ -408,6 +411,8 @@
                         let totalCommand = calculatePriceCommand();
                         updateTotalCommand(totalCommand);
                         cleanMoneyReceivedAndReturned();
+                        $('#cancelCodePromo').removeClass('hidden');
+                        $('#validateCodePromo').addClass('hidden');
                     } else {
                        codePromoNotGoodResponse();
                     }
@@ -418,6 +423,19 @@
                 alert("Code promo vide");
             }
             
+        }
+
+        function cancelCodePromo()
+        {
+            codePromoHydraPourcentage = 0;
+            $('#codePromoSuccess').addClass('hidden')
+            $('#codePromoError').addClass('hidden')
+            $('#codePromoSuccess').text('');
+            $('#codepromo').val('');
+            let totalCommand = calculatePriceCommand();
+            updateTotalCommand(totalCommand);
+            $('#validateCodePromo').removeClass('hidden');
+            $('#cancelCodePromo').addClass('hidden');
         }
 
 

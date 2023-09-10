@@ -17,6 +17,7 @@
         "doctrine/orm": "^2.8",
         "friendsofsymfony/jsrouting-bundle": "^2.8",
         "friendsofsymfony/rest-bundle": "^3.0",
+        "knplabs/knp-paginator-bundle": "^5.9",
         "nelmio/cors-bundle": "^2.1",
         "pagerfanta/doctrine-orm-adapter": "^3.5",
         "pagerfanta/twig": "^3.5",
@@ -58,6 +59,7 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.4",
+        "fzaninotto/faker": "^1.9",
         "symfony/browser-kit": "^5.2",
         "symfony/css-selector": "^5.2",
         "symfony/debug-bundle": "^5.2",
@@ -72,7 +74,10 @@
         "preferred-install": {
             "*": "dist"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/flex": true
+        }
     },
     "autoload": {
         "psr-4": {

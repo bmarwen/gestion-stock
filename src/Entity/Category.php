@@ -9,11 +9,21 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=CategoryRepository::class)
  * @UniqueEntity("name")
- * @ApiResource()
+ * @ApiResource(
+ * collectionOperations={
+ *         "post"={"access_control"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add categories."},
+ *          "get"
+ *     },
+ * itemOperations={
+ *         "put" ={"access_control"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add products."},
+ *          "get"
+ *     },
+ * normalizationContext={"groups"={"read"}},)
  */
 class Category
 {
@@ -41,6 +51,7 @@ class Category
 
     /**
      * @ORM\OneToMany(targetEntity=Product::class, mappedBy="category", orphanRemoval=true)
+     * @Groups({"admin:read"})
      */
     private $products;
 

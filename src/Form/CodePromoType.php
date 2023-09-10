@@ -25,12 +25,14 @@ class CodePromoType extends AbstractType
             $expiresAt = new \DateTime();
             $expiresAt->add(new \DateInterval('P1M'));
         }
+        if (null == $builder->getData()->getId()) {
+            $codePromoGenerated = $this->generateRandomString();
+        }
         
-        $codePromoGenerated = $this->generateRandomString();
         
         $builder
             ->add('code', TextType::class, [
-                'data' => $codePromoGenerated,
+                'data' => null == $builder->getData()->getId() ? $codePromoGenerated : $builder->getData()->getCode(),
                 'label' => 'Code (Modifiable)'
             ])
             ->add('startsAt',DateType::class,[

@@ -1,5 +1,5 @@
 <br><br>
-{% set totalCaisse = 0 %}
+{% set ClotureCaisse = 0 %}
 <table class="table table-striped" style="font-size:18px;" >
     <thead>
         <tr>
@@ -25,25 +25,25 @@
             </tr>
         <tr>
         <tr>
-            <th>Total caisse</th>
-            <th>{{totalAllCommands + total_expenses + restInRegisterOfPrevDay  | number_format(2) }}</th>
+            <th>Total en caisse</th>
+            <th>{% set totalCaisse = totalAllCommands - total_expenses + restInRegisterOfPrevDay %} {{totalCaisse  | number_format(2) }}</th>
         <tr>
             <th scope="col">Cloture de caisse</th>
             <th>
                 {% for piece in cash_register_piece_monnaies %}
-                    {% set totalCaisse = totalCaisse + piece.moneyPiece * piece.howMany %}
+                    {% set ClotureCaisse = ClotureCaisse + piece.moneyPiece * piece.howMany %}
                 {% endfor %}
-                {{ totalCaisse + total_expenses + restInRegisterOfPrevDay - totalMoneyRendered| number_format(2)  }}
+                {{ ClotureCaisse | number_format(2)  }}
             </th>
         <tr>
-        <tr>{% set ecart = totalCaisse - totalAllCommands - totalMoneyRendered %}
+        <tr>{% set ecart = ClotureCaisse - totalCaisse %}
             <th scope="col">Ecart</th><th>{{ ecart | number_format(2) }} </th>
         </tr>
         <tr>
             <th scope="col">Versement</th><th>{{versement.versementBank | number_format(2)}}</th>
         </tr>
         <tr>
-            <th scope="col">Reste Caisse</th><th>{{totalAllCommands + total_expenses + restInRegisterOfPrevDay - versement.versementBank | number_format(2) }}</th>
+            <th scope="col">Reste Caisse</th><th>{{ClotureCaisse - versement.versementBank | number_format(2) }}</th>
         </tr>
     </thead>   
 </table> 

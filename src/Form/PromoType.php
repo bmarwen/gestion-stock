@@ -28,14 +28,6 @@ class PromoType extends AbstractType
         }
 
         $builder
-            ->add('product', EntityType::class, [
-                'class' => Product::class,
-                'query_builder' => function (EntityRepository $er) {
-                    return $er->createQueryBuilder('p')
-                        ->orderBy('p.name', 'ASC');
-                },
-                'choice_label' => 'name',
-            ])
             ->add('pourcent',IntegerType::class,[
                 'label' => 'Pourcentage %',
             ])

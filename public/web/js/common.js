@@ -1,4 +1,6 @@
-const urlApi = "http://localhost/gestion-stock/public/api/";
+//const urlApi = "http://localhost/gestion-stock/public/api/";
+const urlApi = "https://paraeljinene.tn/api/";
+
 const codePromoUrl = "code_promos";
 const clientUrl = '/api/clients/';
 const sendHttpRequest = (method,url,data) => {

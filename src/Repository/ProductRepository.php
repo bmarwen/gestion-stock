@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Controller\DefaultController;
 use App\Entity\Product;
 use DateInterval;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -122,9 +123,9 @@ class ProductRepository extends ServiceEntityRepository
         return $qb;
     }
 
-    public function findProductCreatedSinceXDays($xDays = 15, $minPrice, $maxPrice, $priceOrder){
+    public function findLastProductsCreatedSinceXDays($minPrice, $maxPrice, $priceOrder){
         $nowSubXDays = new \DateTime();
-        $xDays = "P" . $xDays . "D";
+        $xDays = "P" . DefaultController::NEWS_PRODUCTS_FROM_X_DAYS . "D";
         $nowSubXDays->sub(new \DateInterval($xDays)); 
         $qb = $this->createQueryBuilder("p")
                     ->where('p.createdAt >= :nowSubXDays')
@@ -140,49 +141,40 @@ class ProductRepository extends ServiceEntityRepository
         return $qb;
     }
     
-    public function findBySearchedWord($searchedWord, $minPrice = null, $maxPrice = null){
+    public function findBySearchedWord($searchedWord, $minPrice = null, $maxPrice = null)
+    {
+        $qb = $this->createQueryBuilder("p");
         if ($minPrice === 0 || null !== $minPrice) {
             $params['minPrice'] = $minPrice;
         }
         if (null != $maxPrice) {
             $params['maxPrice'] = $maxPrice;
         }
-        $params['name'] = '%'. strtoupper($searchedWord)  . '%';
-       
-        $qb = $this->createQueryBuilder("p")
-                    ->where('p.name LIKE UPPER(:name)')
-                    ->setParameters($params);
+        $productsInPromo = '';
+        if ($searchedWord === DefaultController::SEARCH_PROMO) {// products in promo
+            $productsInPromo = 'pr.isEnabled = true AND pr.startsAt <:now and pr.expiresAt > :now ';
+            $params['now'] = new \DateTime();
+            $qb->join('p.promos','pr');
+            $qb->where($productsInPromo);
+        } else if ($searchedWord === DefaultController::SEARCH_NEW) {// products new created past x days
+           return $this->findLastProductsCreatedSinceXDays(0,9999999,'ASC');
+        } else {
+            $params['name'] = '%'. strtoupper($searchedWord)  . '%';
+            $qb->where('p.name LIKE UPPER(:name)');
+        }
+        
+        $qb->setParameters($params);
                   
         return $qb;
     }
 
-
-    // /**
-    //  * @return Product[] Returns an array of Product objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findByNameOrCode($searchValue)
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
+            ->where('LOWER(p.name) LIKE :searchValue')
+            ->orWhere('LOWER(p.code) LIKE :searchValue')
+            ->setParameter('searchValue', '%' . strtolower($searchValue) . '%')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Product
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

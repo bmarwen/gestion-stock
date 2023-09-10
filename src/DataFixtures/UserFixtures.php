@@ -24,13 +24,13 @@ class UserFixtures extends Fixture
         $user = new User();
         $user->setUsername("admin@admin.tn");
         $user->setEmail("admin@admin.tn");
-        $user->setPassword('admin2021!');
+        $user->setPassword($this->encoder->encodePassword($user,'123456'));
         $user->setRoles(['ROLE_ADMIN','ROLE_USER']);
 
         $user2 = new User();
         $user2->setUsername("utilisateur@test.tn");
         $user2->setEmail("utilisateur@test.tn");
-        $user2->setPassword($this->encoder->encodePassword($user,'utilisateur!'));
+        $user2->setPassword($this->encoder->encodePassword($user2,'utilisateur!'));
         $user2->setRoles(['ROLE_USER']);
 
         $manager->persist($user);

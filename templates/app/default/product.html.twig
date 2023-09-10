@@ -1,10 +1,7 @@
 {% extends 'app/baseFront.html.twig' %}
-
-{% block title %}Produit{% endblock %}
-
+{% block title %}Produit {% if product is not null %}{{product.name}}{% endif %}{% endblock %}
 {% block body %}
 <br><br>
- <!-- Start Product Details Section -->
     <div class="product-details-section">
         <div class="container">
             <div class="row">
@@ -24,15 +21,21 @@
                 </div>
                 <div class="col-md-6">
                     <div class="product-details-content-area">
-                        <!-- Start  Product Details Text Area-->
                         <div class="product-details-text">
                             <h4 class="title">{{product.name}}</h4>
-                            <div class="price">{{product.price}} DT</div>
+                            <div class="price">
+                                {% if product.currentPromo is not null %}
+                                    <span>
+                                        <br><del class="product-default-price-off">{{product.price}}</del>{{ product.getPriceAfterPromotionIfExists() }} DT
+                                        <br>
+                                    <span style="background-color:#EA2027;color:white;border-radius:15px;font-size:16px;font-weight:bold;padding:2px;">-{{product.currentPromo.pourcent}}%</span>
+                                    {% else %}
+                                        {{ product.price }} DT
+                                {% endif %}
+                                </div>        
                             <p>{% if product.description is null %}Pas de description.{% else %}{{product.description}}{% endif %}</p>
                         </div> <!-- End  Product Details Text Area-->
-                        <!-- Start Product Variable Area -->
                         <div class="product-details-variable">       
-                            <!-- Product Variable Single Item -->
                             <div class="d-flex align-items-center">
                                 <div class="variable-single-item ">
                                     <span>Quantité</span>

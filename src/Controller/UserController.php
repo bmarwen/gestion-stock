@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Repository\CommandOnLineRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +20,13 @@ class UserController extends AbstractController
     /**
      * @Route("/", name="user_show", methods={"GET"})
      */
-    public function show(): Response
+    public function show(CommandOnLineRepository $commandOnLineRepository): Response
     {
         $user = $this->getUser();
+        $commandOnLinesOfCurrentUser = $commandOnLineRepository->findBy([],['createdAt' => 'ASC']);
         return $this->render('user/show.html.twig', [
             'user' => $user,
+            'my_commands' => $commandOnLinesOfCurrentUser
         ]);
     }
 
@@ -38,7 +41,7 @@ class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getDoctrine()->getManager()->flush();
 
-            return $this->redirectToRoute('user_edit',['id' => $user->getId()]);
+            return $this->redirectToRoute('user_show');
         }
 
         return $this->render('user/edit.html.twig', [

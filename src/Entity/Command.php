@@ -5,11 +5,24 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\CommandRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=CommandRepository::class)
- * @ApiResource()
  * @ORM\HasLifecycleCallbacks()
+ *  @ApiResource(
+ * * attributes={"pagination_items_per_page"=1000000},
+ * collectionOperations={
+ *         "post"={"security"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add products."},
+ *          "get" = { "security" = "is_granted('ROLE_ADMIN')" },
+ *     },
+ * itemOperations={
+ *         "put" ={"security"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add products."},
+ *         "get" = { "security" = "is_granted('ROLE_ADMIN')" },
+ *     },
+ *     normalizationContext={"groups"={"user:read"}},
+ *     denormalizationContext={"groups"={"user:write"}},
+ * )
  */
 class Command
 {
@@ -28,33 +41,39 @@ class Command
     /**
      * @ORM\Column(type="array")
      * [{id: 'x', howMany: 'x'},{id: 'y',  nb: 'y'}]
+     *  @Groups({"user:read", "user:write"})
      */
     private $products = [];
 
     /**
      * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="commands")
      * @ORM\JoinColumn(name="client_id", referencedColumnName="id", nullable=true)
+     *  @Groups({"user:read", "user:write"})
      */
     private $client;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     *  @Groups({"user:read", "user:write"})
      */
     private $comment;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     *  @Groups({"user:read", "user:write"})
      */
     private $moneyReceivedByTheClient;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     *  @Groups({"user:read", "user:write"})
      */
     private $moneyReturnedToTheClient;
 
     /**
      * @ORM\ManyToOne(targetEntity="CodePromo", inversedBy="commands")
      * @ORM\JoinColumn(name="code_promo_id", referencedColumnName="id")
+     *  @Groups({ "user:write"})
      */
     private $codePromo;
 

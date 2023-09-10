@@ -4,12 +4,12 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @ApiResource()
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @UniqueEntity(fields={"email"}, message="email déjà utilisé")
  */
@@ -66,6 +66,16 @@ class User implements UserInterface,\Serializable
      * @ORM\Column(type="string", length=55, nullable=true)
      */
     private $lastname;
+
+    /**
+     * @ORM\OneToMany(targetEntity="CommandOnLine", mappedBy="buyer")
+     */
+    private $commandsOnLine;
+
+    public function __construct()
+    {
+        $this->commandsOnLine = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -204,6 +214,38 @@ class User implements UserInterface,\Serializable
     public function setLastname(?string $lastname): self
     {
         $this->lastname = $lastname;
+
+        return $this;
+    }
+
+     /**
+     * Get the value of commandsOnLine
+     */ 
+    public function getCommandsOnLine()
+    {
+        return $this->commandsOnLine;
+    }
+
+    /**
+     * Add the value of commandsOnLine
+     *
+     * @return  self
+     */ 
+    public function addCommandsOnLine($commandOnLine)
+    {
+        $this->commandsOnLine[] = $commandOnLine;
+
+        return $this;
+    }
+
+    /**
+     * Remove the value of commandsOnLine
+     *
+     * @return  self
+     */ 
+    public function removeCommandsOnLine($commandOnLine)
+    {
+        unset($this->commandsOnLine[$commandOnLine]);
 
         return $this;
     }

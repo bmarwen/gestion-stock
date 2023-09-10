@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aments - Car Accessories Shop HTML Template</title>
+    <title>{% block title %}PARA El JINENE - Accueil{% endblock %}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
     <!-- ::::::::::::::Favicon icon::::::::::::::-->
-    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" type="image/png">
+    <link rel="shortcut icon" href="{{ asset('images/logo.ico') }}" type="image/png">
 
     <!-- ::::::::::::::All CSS Files here :::::::::::::: -->
     <!-- Vendor CSS -->
@@ -45,7 +45,7 @@
                             <ul class="header-action-icon">
                                 <li><a target="_blank" href="https://www.facebook.com/PARA-El-JINENE-105315591614935"><i class="icon-facebook"></i></a></li>
                                 <li><a target="_blank" href="https://www.instagram.com/paraeljinene/"><i class="icon-instagram"></i></a></li>
-                                <li><a href="mailto:paraeljinen@gmail.com"><i class="icon-mail"></i></a></li>
+                                <li><a href="mailto:admin@paraeljinene.tn"><i class="icon-mail"></i></a></li>
                             </ul> <!-- End Header Top Menu -->
                         </div>
                     </div>
@@ -68,13 +68,13 @@
                         <div class="header-search">
                             <form action="{{path('search_show')}}" method="POST">
                                 <div class="header-search-box default-search-style d-flex">
-                                    <input class="default-search-style-input-box border-around border-right-none" name="searchedWord" type="search" placeholder="Taper le nom d'un produit..." required>
+                                    <input class="default-search-style-input-box border-around border-right-none" {% if app.request.get('_route') != 'home' %}{% if searchParam.searched is defined %}value="{{searchParam.searched}}"{% elseif searchParam.search is defined %}value="{{searchParam.search}}"{% endif %}{% endif %} name="searchedWord" type="search" placeholder="Taper le nom d'un produit..." required>
                                     <button class="default-search-style-input-btn" type="submit"><i class="icon-search"></i></button>
                                 </div>
                             </form>
                         </div> <!-- End Header Search -->
                     </div>
-                    <div class="col-3 " >
+                    <div class="col-3">
                         <!-- Start Header Action Icon -->
                         <ul class="header-action-icon" >
                             <li>
@@ -140,7 +140,7 @@
                                         <a class="{% if app.request.attributes.get('_route') == '_list' %}active{% endif %}" href="{{path('search_show')}}?search=PROMO">Promos</a>
                                     </li>
                                     <li>
-                                        <a class="{% if app.request.attributes.get('_route') == '_list' %}active{% endif %}" href="?search=NEW">Nouveautés</a>
+                                        <a class="{% if app.request.attributes.get('_route') == '_list' %}active{% endif %}" href="{{path('search_show')}}?search=NEW">Nouveautés</a>
                                     </li>
                                 </ul>
                             </nav>
@@ -190,17 +190,82 @@
                 <ul class="header-action-icon">
                     <li><a href="https://www.facebook.com/PARA-El-JINENE-105315591614935"><i class="icon-facebook"></i></a></li>
                     <li><a href="https://www.instagram.com/paraeljinene/"><i class="icon-instagram"></i></a></li>
-                    <li><a href="mailto:paraeljinen@gmail.com"><i class="icon-mail"></i></a></li>
+                    <li><a href="mailto:admin@paraeljinene.tn"><i class="icon-mail"></i></a></li>
                 </ul> <!-- End Header Top Menu -->
+                <br>
             </div> <!-- End Mobile Menu User Top -->
             <!-- Start Mobile Menu User Center -->
             <div class="mobile-menu-center">
                 <form action="{{path('search_show')}}" method="GET">
                     <div class="header-search-box default-search-style d-flex">
-                        <input class="default-search-style-input-box border-around border-right-none" type="search" name="searchedWord" placeholder="taper le nom d'un produit..." required>
+                        <input class="default-search-style-input-box border-around border-right-none" type="search"  {% if searchParam.searched is defined %}value="{{searchParam.searched}}"{% elseif searchParam.search is defined %}value="{{searchParam.search}}"{% endif %} name="searchedWord" placeholder="taper le nom d'un produit..." required>
                         <button class="default-search-style-input-btn" type="submit"><i class="icon-search"></i></button>
                     </div>
                 </form>
+                <!-- Start Header Action Icon -->
+                <br>
+                <ul class="header-action-icon" >
+                            <li>
+                                {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+                                    <a href="{{ path('user_show') }}">
+                                        <i class="icon-user"></i>
+                                    </a>
+                                {%else %}    
+                                 <a href="{{ path('login') }}" >
+                                        <i class="icon-user"></i>
+                                 </a>
+                                {% endif %}
+                            </li>
+                            <li>
+                                <a href="{{path('basket_show')}}" >
+                                    <i class="icon-shopping-cart"></i>
+                                    <span class="header-action-icon-item-count" >{{ app.session.get('products') | length }}</span>
+                                </a>
+                            </li>
+                            {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+                                <li>
+                                    <a href="{{ path('logout') }}" class="" >
+                                        <i class="icon-power"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <li>
+                                    <a href="{{ path('admin.index') }}" class="">
+                                        <i title="Administration" class="icon-code"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul> <!-- End Header Action Icon -->
+                        <hr>
+            </div> <!-- End Mobile Menu User Center -->
+            <!-- Start Mobile Menu Bottom -->
+            <div class="mobile-menu-bottom">
+                <ul>                    
+                    <li>
+                        <a class="{% if app.request.attributes.get('_route') == 'home' %}active{% endif %}" href="{{path('home')}}">Accueil</a>
+                    </li>
+                    <li>
+                        <a class="{% if app.request.attributes.get('_route') == '_list' %}active{% endif %}" href="{{path('search_show')}}?search=PROMO">Promos</a>
+                    </li>
+                    <li>
+                        <a class="{% if app.request.attributes.get('_route') == '_list' %}active{% endif %}" href="{{path('search_show')}}?search=NEW">Nouveautés</a>
+                    </li>
+                </ul>
+                <hr>
+                <!-- Start Mobile Menu Nav -->
+                <br>
+                <h5>Catégories</h5>
+                <div class="offcanvas-menu">
+                    <ul>
+                    {% for category in categories %}
+                        <li>
+                            <a href="{{path('categories', {'categorie': category.id })}}"><span>{{category.name}}</span></a>
+                        </li>   
+                    {%endfor %}                        
+                    </ul>
+                </div> <!-- End Mobile Menu Nav -->
+                <hr>
                 <div class="mobile-menu-customer-support">
                     <div class="mobile-menu-customer-support-icon">
                         <img src="assets/images/icon/support-icon.png" alt="">
@@ -210,31 +275,9 @@
                         {{ phone }}
                     </div>
                 </div>
-                <!-- Start Header Action Icon -->
-                <ul class="mobile-action-icon">
-                    <li class="mobile-action-icon-item">
-                        <a href="{{path('basket_show')}}" class="mobile-action-icon-link">
-                            <i class="icon-shopping-cart"></i>
-                            <span class="mobile-action-icon-item-count" >{{ app.session.get('products') | length }}</span>
-                        </a>
-                    </li>
-                </ul> <!-- End Header Action Icon -->
-            </div> <!-- End Mobile Menu User Center -->
-            <!-- Start Mobile Menu Bottom -->
-            <div class="mobile-menu-bottom">
-                <!-- Start Mobile Menu Nav -->
-                <div class="offcanvas-menu">
-                    <ul>
-                    {% for category in categories %}
-                        <li>
-                            <a href="{{category.id}}"><span>{{category.name}}</span></a>
-                        </li>   
-                    {%endfor %}                        
-                    </ul>
-                </div> <!-- End Mobile Menu Nav -->
-
+                <hr>
                 <!-- Mobile Manu Mail Address -->
-                <a class="mobile-menu-email icon-text-right" href="mailto:Paraeljinen@gmail.com"><i class="fa fa-envelope-o"> Paraeljinen@gmail.com</i></a>
+                <a class="mobile-menu-email icon-text-right" href="mailto:admin@paraeljinene.tn"><i class="fa fa-envelope-o"> admin@paraeljinene.tn</i></a>
             </div> <!-- End Mobile Menu Bottom -->
         </div> <!-- End Offcanvas Mobile Menu Wrapper -->
     </div> <!-- ...:::: End Offcanvas Mobile Menu Section:::... -->
@@ -274,12 +317,8 @@
                             <h3 class="footer-widget-title">Information</h3>
                             <div class="footer-menu">
                                 <ul class="footer-menu-nav">
-                                    <li><a href="about-us.html">Qui sommes-nous ?</a></li>
-                                    <li><a href="contact-us.html">Nous contacter</a></li>
-                                </ul>
-                                <ul class="footer-menu-nav">
-                                    <li><a href="">Notice Légale</a></li>
-                                    <li><a href="">Paiement</a></li>
+                                    <li><a href="{{path('a_propos')}}">A propos</a></li>
+                                    <li><a href="https://www.facebook.com/PARA-El-JINENE-105315591614935" target="_blank">Nous contacter</a></li>
                                 </ul>
                             </div>
                         </div>

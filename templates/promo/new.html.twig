@@ -15,7 +15,21 @@
 {% block javascripts %}
 <script>
     $(document).ready(function() {
-        $('#promo_product').select2()
+        $('#command_products').select2()
+         const getProductData = () => {
+            let selectProducts = $('#command_products')
+            let productUrl = 'products'
+            let params = '?howMany[gte]=1&pagination=false' // products which exist in the stock howMany != 0
+            sendHttpRequest('get', urlApi + productUrl + params)
+                .then(products => {
+                    products['hydra:member'].forEach(product => {
+                        selectProducts.append(new Option(product.code,product.id))    
+                    })
+                }).catch(err => {
+                console.log(err.message)
+            })
+        }
+        getProductData();
     });
 </script>
 {% endblock %}

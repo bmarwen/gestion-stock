@@ -63,6 +63,14 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-12 mb-20">
+                                    <div class="default-form-box form-check">
+                                        <input class="form-check-input" name="shipping_city" type="checkbox" value="1" id="free_liv_btn" style="margin-top:1%;">
+                                        <label class="form-check-label" for="free_liv_btn">
+                                            Soliman, Bni Khaled, Grombalia ont la livraison gratuite, cochez cette case si c'est la ville de livraison.
+                                        </label>
+                                    </div>
+                                </div>
                                 <div class="col-lg-6 mb-20">
                                     <div class="default-form-box">
                                         <label>Phone<span>*</span></label>
@@ -136,7 +144,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Livraison</th>
-                                                <td><strong>{%if totalBasket < freeShippingMinPrice.value %}{{shippingPrice.value}} DT{% else %}Gratuite{% endif %}</strong></td>
+                                                <td id="shipping_price"><strong>{%if totalBasket < freeShippingMinPrice.value %}{{shippingPrice.value}} DT{% else %}Gratuite{% endif %}</strong></td>
                                             </tr>
                                             {% if app.session.has('codepromo_id') %}
                                                 <tr>
@@ -147,7 +155,7 @@
                                             <tr class="order_total">
                                                 <th>Totale</th>
                                                 <td>
-                                                    <strong>
+                                                    <strong id="total_basket">
                                                     {% if totalBasket < freeShippingMinPrice.value %}{% set totalBasket = totalBasket + shippingPrice.value %}{% endif %} 
                                                     {% if app.session.has('codepromo_id') %}<strike style="color:red;">{{totalBasket}}</strike> {{totalBasket - ((totalBasket * app.session.get('codepromo_percent'))/100) |round(1, 'ceil') }}{%else%}{{totalBasket}}{%endif%} DT
                                                     </strong>
@@ -175,6 +183,15 @@
     </div><!-- ...:::: End Checkout Section:::... -->
 {% endblock %}
 {% block javascripts %}
+{% set totalBasket = 0 %}
+{% for product in app.session.get('products') %}
+        {%if productsFromDb[product.id].currentPromo is not null%} {# IF PROMO #}
+            {% set currentPrice = productsFromDb[product.id].getPriceAfterPromotionIfExists %}     
+        {% else %}
+            {% set currentPrice = product.price %}     
+        {% endif %}
+        {% set totalBasket = totalBasket + currentPrice * product.qty %}
+{% endfor %}                                            
     <script>
         $( document ).ready(function() {
             {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
@@ -184,6 +201,21 @@
                 $('#command_on_line_phone').val('{{app.user.telephone}}');
                 $('#command_on_line_email').val('{{app.user.email}}');
             {% endif %}
+            let priceShipping = $('#shipping_price').html();
+            $('#free_liv_btn').on('change',function()
+            {
+                if ($(this).is(":checked")) {
+                    $('#shipping_price').html('<strong>Gratuite</strong>');
+                    $('#total_basket').html('{{totalBasket}} DT');
+                } else {
+                    $('#shipping_price').html(priceShipping);
+                    let totalBsk = {% if totalBasket < freeShippingMinPrice.value %}
+                                    {% set totalBasket = totalBasket + shippingPrice.value %}{% endif %} 
+                                    {% if app.session.has('codepromo_id') %}'<strike style="color:red;">'.concat("{{totalBasket}}").concat('</strike>').concat({{totalBasket - ((totalBasket * app.session.get('codepromo_percent'))/100) |round(1, 'ceil') }})
+                                      {%else%}{{totalBasket}}{%endif%};
+                    $('#total_basket').html(totalBsk.toString().concat(" DT"));
+                }
+            })
         });
     </script>
 {% endblock %}

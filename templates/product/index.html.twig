@@ -3,8 +3,25 @@
 {% block url %}{{ path('admin.product_index') }}{% endblock %}
 {% block stylesheets %}<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">{% endblock %}
 {% block body %}
-    <div class="row flex mt-4 mb-4">
-        <a class="btn btn-primary" href="{{ path('admin.product_new') }}">Ajouter un produit</a>
+
+    <div class="mt-4 mb-4">
+        <div class="row justify-content-between">
+            <div class="col-md-4">
+                <a class="btn btn-primary" href="{{ path('admin.product_new') }}">Ajouter un produit</a>
+            </div>
+            <div class="col-md-6 text-md-right  mt-md-0 mt-4">
+                <form action="" method="GET" class="form-inline">
+                    <div class="form-group " style="margin-right: 5px;">
+                        <label for="searchedValue" class="sr-only">Rechercher:</label>
+                        <input type="text" name="searchedValue" id="searchedValue" value="{{ app.request.query.get('searchedValue') }}" class="form-control" placeholder="Par code ou nom">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Rechercher</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="pagination">
+        {{ knp_pagination_render(pagination) }}
     </div>
     <table class="table" id="table">
         <thead>
@@ -25,7 +42,7 @@
             </tr>
         </thead>
         <tbody>
-        {% for product in products %}
+        {% for product in pagination %}
             <tr>
                 <td>{{ product.code }}</td>
                 <td>{{ product.name }}</td>
@@ -57,15 +74,22 @@
         {% endfor %}
         </tbody>
     </table>
+    <br>
+    <div class="pagination">
+        {{ knp_pagination_render(pagination) }}
+    </div>
+
 {% endblock %}
 {% block javascripts %}
     <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#table').DataTable({
-                "pagingType": "full_numbers",
-                "order": [[ 1, "asc" ]]
-            });
-        } );
-    </script>
+        <script>
+            $(document).ready(function () {
+                $('#table').DataTable({
+                    "paging": false,
+                    "order": [[ 1, "asc" ]],
+                    "lengthChange": false,
+                    "info": false
+                });
+            } );
+        </script>
 {% endblock %}

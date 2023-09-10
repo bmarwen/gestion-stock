@@ -73,10 +73,19 @@ class CheckoutController extends AbstractController
                     $commandOnLine->setCodePromo($codePromo);
                     $codePromo->addCommandsOnLine($commandOnLine);
                 }
+                $entityManager->persist($codePromo);
             }
-            $commandOnLine->setShippingPrice($shippingPriceCalculated);
+            $shippingCity = $request->request->get('shipping_city', false);
+            if (false === $shippingCity) {
+                $commandOnLine->setShippingPrice($shippingPriceCalculated);
+            } else {
+                $commandOnLine->setShippingPrice(0);
+            }
+            
+            if ($this->getUser()) {
+                $commandOnLine->setBuyer($this->getUser());
+            }
             $entityManager->persist($commandOnLine);
-            $entityManager->persist($codePromo);
             $entityManager->flush();
             $session->remove('products');
             $session->remove('codepromo_id');

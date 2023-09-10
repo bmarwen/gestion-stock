@@ -8,8 +8,6 @@ use App\Repository\ApplicationRepository;
 use Pagerfanta\Pagerfanta;
 use App\Repository\ProductRepository;
 use App\Repository\PromoRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Query;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,13 +22,10 @@ class DefaultController extends AbstractController
     const SEARCH_ALL = "ALL";
     const SEARCH_PROMO = "PROMO";
     const SEARCH_NEW = "NEW";
-    const NEWS_PRODUCTS_FROM_X_DAYS = 15;
-
+    const NEWS_PRODUCTS_FROM_X_DAYS = 90;
     const LAST_PROMOS_ELEMENTS = 8;
-    const LAST_PRODUCTS_ELEMENTS = 8;
-
     const MAX_PRICE_IN_RANGE_DEFAULT = 999;
-    const MAX_PER_PRODUCTS_PAGE = 12;
+    const MAX_PER_PRODUCTS_PAGE = 18;
 
     private $requestStack; //session => products
 
@@ -48,22 +43,21 @@ class DefaultController extends AbstractController
         $imageHomeTopLeft1 = $applicationRepository->findOneByName('image_home_top_left_1');
         $imageHomeTopLeft2 = $applicationRepository->findOneByName('image_home_top_left_2');
 
-        $imageHomeTopRightSlider1 = $applicationRepository->findOneByName('image_home_top_right_slider1');
-        $imageHomeTopRightSlider2 = $applicationRepository->findOneByName('image_home_top_right_slider2');
+
+        $imagesHomeTopRightSlider = $applicationRepository->nameStartsWith('image_home_top_right_slider');
 
         $imageHomeBottomLeft1 = $applicationRepository->findOneByName('image_home_bottom_left_1');
         $imageHomeBottomCenter = $applicationRepository->findOneByName('image_home_bottom_center');
         $imageHomeBottomRigth1 = $applicationRepository->findOneByName('image_home_bottom_right_1');
         
-
-        $lastProducts = $productRepository->findBy([],['createdAt' => 'DESC'],DefaultController::LAST_PRODUCTS_ELEMENTS);
+        
+        $lastProducts = $productRepository->findLastProductsCreatedSinceXDays(-1, 999999, false)->getQuery()->getResult();
         $lastPromos = $promoRepository->getLastPromos(DefaultController::LAST_PROMOS_ELEMENTS);
         
         return $this->render('app/default/index.html.twig', [
             'imageHomeTopLeft1' => $imageHomeTopLeft1,
             'imageHomeTopLeft2' => $imageHomeTopLeft2,
-            'imageHomeTopRightSlider1' => $imageHomeTopRightSlider1,
-            'imageHomeTopRightSlider2' => $imageHomeTopRightSlider2,
+            'imagesHomeTopRightSlider' => $imagesHomeTopRightSlider,
             'imageHomeBottomLeft1' => $imageHomeBottomLeft1,
             'imageHomeBottomCenter' => $imageHomeBottomCenter,
             'imageHomeBottomRigth1' => $imageHomeBottomRigth1,
@@ -114,11 +108,15 @@ class DefaultController extends AbstractController
            
             $priceOrder = $request->query->get('priceOrder', null); //ASC DESC 
             $qbProducts = $productRepository->findByCategoriesAndPriceRange($categorie, $priceMinQuery, $priceMaxQuery, $priceOrder);
-
             $pagerfanta = new Pagerfanta(new QueryAdapter($qbProducts));
             $pagerfanta->setMaxPerPage(self::MAX_PER_PRODUCTS_PAGE);
-            $pagerfanta->setCurrentPage($request->query->get('page', 1));
-            
+
+            try{
+                $pagerfanta->setCurrentPage($request->query->get('page', 1));
+            }catch(\Exception $e){
+                $request->query->set('page', 1);
+                return $this->showCategories($request,$productRepository,$categorie);
+            }
             return $this->render('app/default/search.html.twig', [
                 'categorie' => $categorie,
                 'priceRangeMin' => $priceRangeMin,
@@ -133,9 +131,10 @@ class DefaultController extends AbstractController
     /**
      * @Route("/search", name="search_show")
      */
-    public function search(Request $request, ProductRepository $productRepository, EntityManagerInterface $em): Response
+    public function search(Request $request, ProductRepository $productRepository): Response
     {   
         $priceOrder = $request->query->get('priceOrder', null); //ASC DESC 
+        $search = $request->query->has('search') ? $request->query->get('search') : null;//for post param
         $searchedWord = $request->request->has('searchedWord') ? $request->request->get('searchedWord') : null;//for post param
         if (null === $searchedWord) {//for get param
             $searchedWord = $request->query->has('searchedWord') ? $request->query->get('searchedWord') : null;
@@ -156,34 +155,66 @@ class DefaultController extends AbstractController
         
         $typeOfSearch = $request->query->get("search",self::SEARCH_ALL); //type could be all(by search bar) or promo(search for promo articles) or new product(search for new articles)
         if ($typeOfSearch === strtoupper(self::SEARCH_NEW)) {
-            $qbProducts = $productRepository->findProductCreatedSinceXDays(self::NEWS_PRODUCTS_FROM_X_DAYS,$priceMinQuery, $priceMaxQuery, $priceOrder);
+            $qbProducts = $productRepository->findLastProductsCreatedSinceXDays($priceMinQuery, $priceMaxQuery, $priceOrder);
+            $minPriceIntheApplication = $productRepository->findMaxOrMinPriceByName('min',strtoupper(self::SEARCH_NEW));
+            $maxPriceIntheApplication = $productRepository->findMaxOrMinPriceByName('max',strtoupper(self::SEARCH_NEW));
+            if($minPriceIntheApplication){
+                $priceRangeMin = $minPriceIntheApplication[0]['price'];
+                $priceRangeMax = $maxPriceIntheApplication[0]['price'];
+            }
         }elseif ($typeOfSearch === strtoupper(self::SEARCH_PROMO)) {
             $qbProducts = $productRepository->findByInPromoNow($priceMinQuery, $priceMaxQuery, $priceOrder);
+            $minPriceIntheApplication = $productRepository->findMaxOrMinPriceByName('min',strtoupper(self::SEARCH_PROMO));
+            $maxPriceIntheApplication = $productRepository->findMaxOrMinPriceByName('max',strtoupper(self::SEARCH_PROMO));
+            if($minPriceIntheApplication){
+                $priceRangeMin = $minPriceIntheApplication[0]['price'];
+                $priceRangeMax = $maxPriceIntheApplication[0]['price'];
+            }
         }else{ //all
             if ($searchedWord == null) {
                 $qbProducts = null;
             } else {
-                
                 $qbProducts = $productRepository->findByNameAndPriceRange($searchedWord, $priceMinQuery, $priceMaxQuery, $priceOrder);
             }
         }
         if(null != $qbProducts){
             $pagerfanta = new Pagerfanta(new QueryAdapter($qbProducts));
             $pagerfanta->setMaxPerPage(self::MAX_PER_PRODUCTS_PAGE);
-            $pagerfanta->setCurrentPage($request->query->get('page', 1));
+            try{
+                $pagerfanta->setCurrentPage($request->query->get('page', 1));
+            }catch(\Exception $e){
+                $request->query->set('page', 1);
+                return $this->search($request,$productRepository);
+            }
         }else {
             $pagerfanta = [];
         }
-        
+        $param = [];
+        if (null != $search) {
+            $param = ['search' => $search];
+        } else if (null != $searchedWord) {
+            $param = ['searched' => $searchedWord];
+        }
         
         return $this->render('app/default/search.html.twig', [
                 'priceRangeMin' => $priceRangeMin,
                 'priceRangeMax' => $priceRangeMax,
                 'prices' => ['minPrice' => $priceMinQuery, 'maxPrice' => $priceMaxQuery],
                 'productsPager' => $pagerfanta,
-                'searchedWord' => $searchedWord
+                'searchParam' => $param
         ]);
     }
+
+    /**
+     * @Route("/apropos", name="a_propos")
+     */
+    public function apropos(ApplicationRepository $applicationRepository): Response
+    {
+        return $this->render('app/default/a_propos.html.twig', [
+            
+        ]);
+    }
+
 
 
 }

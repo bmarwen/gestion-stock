@@ -3263,8 +3263,8 @@ progress {
 
 .btn-primary {
   color: #FFF;
-  background-color: #0D6EFD;
-  border-color: #0D6EFD;
+  background-color: #2ecc71;
+  border-color: #2ecc71;
 }
 .btn-primary:hover {
   color: #FFF;
@@ -4887,9 +4887,9 @@ progress {
 }
 
 .alert-danger {
-  color: #030303;
-  background-color: #cdcdcd;
-  border-color: #b9b9b9;
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
 }
 .alert-danger .alert-link {
   color: black;
@@ -13991,15 +13991,19 @@ Components - Products
 .product-default-price {
   display: block;
   color: #2ecc71;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight:600;
 }
 
 .product-default-price-off {
   color: #8a8a8a;
+  font-weight:600;
+  font-size: 18px;
 }
 
 .product-img-warp {
   position: relative;
+  height:265px;
 }
 
 .product-action-icon-link {
@@ -16947,6 +16951,7 @@ Layout - Header
   position: relative;
   font-size: 27px;
   color: #333;
+  text-decoration: none;
 }
 .header-action-icon > li > a:hover {
   color: #2ecc71;
@@ -18047,4 +18052,81 @@ Layout - Footer
   background-position: center 50%;
   background-repeat: no-repeat;
 }
+@media only screen and (max-width: 450px) {
+  .margin-top {
+    margin-top:90px;
+  }
+}
+@media only screen and (min-width: 450px) {
+  .margin-top {
+    margin-top:130px;
+  }
+}
+@media only screen and (min-width: 582px) {
+  .margin-top {
+    margin-top:60px;
+  }
+}
 
+@media only screen and (min-width: 850px) {
+  .margin-top {
+    margin-top:-10px;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .margin-top {
+    margin-top:-80px;
+  }
+}
+
+@media only screen and (max-width:450px) {
+  .margin-left {
+    margin-left:-2% !important;
+  }
+}
+@media only screen and (min-width:450px) {
+  .margin-left {
+    margin-left:10% !important;
+  }
+}
+@media only screen and (min-width: 1100px) {
+  .margin-left {
+    margin-left:0px !important;
+  }
+}
+
+@media only screen and (max-width: 900px) {
+  .price-widget-mobile {
+    width:92%;
+  }
+}
+@media only screen and (min-width: 900px) {
+  .price-widget-mobile {
+    width:100%;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .margin-left-page-media {
+    margin-left:5%;
+  }
+}
+@media only screen and (min-width: 500px) {
+  .margin-left-page-media {
+    margin-left:2%;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .margin-for-mobile {
+    margin-top:7%;
+  }
+}
+
+
+@media only screen and (max-width: 550px) {
+  .product_thumb {
+    display: none;
+  }
+}

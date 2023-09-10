@@ -11,11 +11,22 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=CodePromoRepository::class)
  * @UniqueEntity("code")
- * @ApiResource()
+ * @ApiResource(
+ * collectionOperations={
+ *         "post"={"access_control"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add categories."},
+ *          "get"
+ *     },
+ * itemOperations={
+ *         "put" ={"access_control"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add products."},
+ *          "get"
+ *     },
+ * normalizationContext={"groups"={"read"}}
+ * )
  * @ApiFilter(SearchFilter::class, properties = {"code" : "exact"})
  * @ApiFilter(BooleanFilter::class, properties={"isValid"})
  */
@@ -30,6 +41,7 @@ class CodePromo
 
     /**
      * @ORM\Column(type="string", length=20)
+     * @Groups({"admin:read"})
      */
     private $code;
 
@@ -40,41 +52,49 @@ class CodePromo
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"admin:read"})
      */
     private $startsAt;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"admin:read"})
      */
     private $expiresAt;
 
     /**
      * @ORM\Column(type="array", nullable=true)
+     * @Groups({"admin:read"})
      */
     private $options = [];
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"admin:read"})
      */
     private $isEnabled;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"admin:read"})
      */
     private $percent;
 
     /**
      * @ORM\Column(type="float", nullable=false)
+     * @Groups({"admin:read"})
      */
     private $minPrice;
 
     /**
      * @ORM\OneToMany(targetEntity="Command", mappedBy="codePromo")
+     * @Groups({"admin:read"})
      */
     private $commands;
 
     /**
      * @ORM\OneToMany(targetEntity="CommandOnLine", mappedBy="codePromo")
+     * @Groups({"admin:read"})
      */
     private $commandsOnLine;
 
@@ -85,7 +105,9 @@ class CodePromo
         $this->createdAt = new \DateTime();
         $this->minPrice = -1;
     }
-
+    /**
+     * @Groups({"admin:read"})
+     */
     public function isValid()
     {
         $now = new \DateTime();

@@ -1,26 +1,22 @@
 {% extends 'app/baseFront.html.twig' %}
 
-{% block title %}Reset your password{% endblock %}
+{% block title %}Réinitialisez votre mot de passe{% endblock %}
 
 {% block body %}
 <div class="container">
-    <div class="row flex mt-4 mb-4 ">
-    {% for flashError in app.flashes('reset_password_error') %}
-        <div class="alert alert-danger" role="alert">{{ flashError }}</div>
-    {% endfor %}
-    <h1>Reset your password</h1>
-
-    {{ form_start(requestForm) }}
-        {{ form_row(requestForm.email) }}
-        <div>
-            <small>
-                Enter your email address and we we will send you a
-                link to reset your password.
-            </small>
-        </div>
-
-        <button class="btn btn-primary">Send password reset email</button>
-    {{ form_end(requestForm) }}
+    <br>
+    <div class="row">
+        <div class="row flex col-md-3"></div>
+        <div class="row flex mt-4 mb-4 col-md-6">
+        {% for flashError in app.flashes('reset_password_error') %}
+            <div class="alert alert-danger" role="alert">{{ flashError }}</div>
+        {% endfor %}
+        <h2>Réinitialisez votre mot de passe</h2>
+        {{ form_start(requestForm) }}
+            {{ form_row(requestForm.email) }}
+            <button style="background-color:#2ecc71;border-color:#2ecc71;" class="btn btn-primary" >Envoyer</button>
+        {{ form_end(requestForm) }}
+        </div> 
     </div> 
 </div>   
 {% endblock %}

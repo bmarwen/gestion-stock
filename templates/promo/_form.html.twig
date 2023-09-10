@@ -1,8 +1,13 @@
 <div class="row">
     <div class="col-md-3">
         {{ form_start(form) }}
+        <div class="form-group">
+            <label class="products">Liste des produits</label>
+            <select id="command_products" class="form-control" name="command_products">
+            </select>
+        </div>
             {{ form_widget(form) }}
-            <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+            <button class="btn btn-primary">Enregistrer</button>
         {{ form_end(form) }}
     </div>
 </div>

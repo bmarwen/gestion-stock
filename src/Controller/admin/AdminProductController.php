@@ -6,6 +6,7 @@ use App\Entity\Notification;
 use App\Entity\Product;
 use App\Form\ProductType;
 use App\Repository\ProductRepository;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,10 +23,22 @@ class AdminProductController extends AbstractController
     /**
      * @Route("/", name="admin.product_index", methods={"GET"})
      */
-    public function index(ProductRepository $productRepository): Response
+    public function index(Request $request, ProductRepository $productRepository, PaginatorInterface $paginator): Response
     {
+        $searchedValue = $request->query->get('searchedValue') ?? null;
+
+        // Retrieve all products or filtered products based on your search criteria
+        $query = empty($searchedValue) ? $productRepository->findAll() : $productRepository->findByNameOrCode($searchedValue);
+
+        // Paginate the query
+        $pagination = $paginator->paginate(
+            $query, // Query
+            $request->query->getInt('page', 1), // Page number
+            25 // Number of items per page
+        );
+
         return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findAll(),
+            'pagination' => $pagination,
         ]);
     }
 

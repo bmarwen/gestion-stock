@@ -17,12 +17,10 @@
                 <th>Numéro de commande</th>
                 <th>Produits</th>
                 <th>Détails</th>
-                <th>Total (DT)</th>
                 <th>Créée le</th>
                 <th>Prénom</th>
                 <th>Nom</th>
                 <th>Téléphone</th>
-                <th>Plus de détails</th>
                 <th>Contacté ?</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -58,20 +56,11 @@
                 {% endif %}
                 Livraison: {{command_on_line.shippingPrice}} dt
                 </td>
-                <td style="font-size:18px;font-weight:bold;">
-                {% if command_on_line.codepromo is not null %}
-                    <strike style="color:red;">
-                        {{command_on_line.totalCommand}}
-                    </strike> {{ (command_on_line.totalCommand - (command_on_line.totalCommand * command_on_line.codepromo.percent)/100) |round(1, 'ceil') }}
-                    {% else %}
-                    {{command_on_line.totalCommand}}
-                    {% endif %}
-                </td>
+                
                 <td>{{ command_on_line.createdAt |date('Y-m-d H:i') }}</td>
                 <td>{{ command_on_line.firstName }}</td>
                 <td>{{ command_on_line.lastName }}</td>
                 <td>{{ command_on_line.phone }}</td>
-                <td>{{ command_on_line.moreDetails |length > 35 ? command_on_line.moreDetails|slice(0, 35) ~ '...' : command_on_line.moreDetails }}</td>
                 <td>
                     <span style="font-size:16px;font-weight:600;color:
                     {% if command_on_line.status %}

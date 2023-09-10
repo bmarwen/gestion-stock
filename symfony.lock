@@ -155,8 +155,17 @@
             "./config/packages/fos_rest.yaml"
         ]
     },
+    "fzaninotto/faker": {
+        "version": "v1.9.2"
+    },
     "jms/metadata": {
         "version": "2.4.0"
+    },
+    "knplabs/knp-components": {
+        "version": "v3.6.0"
+    },
+    "knplabs/knp-paginator-bundle": {
+        "version": "v5.9.0"
     },
     "laminas/laminas-code": {
         "version": "4.0.0"

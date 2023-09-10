@@ -14,16 +14,16 @@
                             <h2 style="color:#2ecc71;">Aucun résultat !</h2>
                         </center>
                  {% endif %}
-                <div class="col-lg-3">
+                <div class="col-lg-3 col-xs-12 col-md-12">
                     <!-- Start Sidebar Area -->
-                    <div class="siderbar-section">
+                    <div class="siderbar-section" style="margin-left:5%;">
                         {% if categorie is defined %}
                             <div class="sidebar-single-widget">
                                 <h3>Catégorie {{categorie.name}}</h3>
                             </div>
                         {% endif %}
                         <!-- Start Single Sidebar Widget -->
-                            <div class="sidebar-single-widget">
+                            <div class="sidebar-single-widget price-widget-mobile" >
                                 <form id="form_price_filter" method="GET" action="{{ path(app.request.attributes.get('_route'),
         app.request.attributes.get('_route_params')) }}?page={{app.request.get('page')}}" >
                                     <h6 class="sidebar-title">FILTRER PAR PRIX</h6>
@@ -40,18 +40,18 @@
                         
                     </div> <!-- End Sidebar Area -->
                 </div>
-                <div class="col-lg-9">
+                <div class="col-lg-9 col-xs-12 col-md-12">
                     <!-- Start Shop Product Sorting Section -->
                     <div class="shop-sort-section">
                         <div class="container">
                             <div class="row">
-                               
                                 <!-- Start Sort Wrapper Box -->
                                 <div class="sort-box d-flex justify-content-between align-items-md-center align-items-start flex-md-row flex-column">
                                     <!-- Start Sort tab Button -->
                                     {% if productsPager is not empty %}
                                         <div class="tab-pane sort-layout-single" id="layout-list">
-                                            {{ pagerfanta(productsPager) }}
+                                           <br> 
+                                           {{ pagerfanta(productsPager) }}
                                         </div>
                                         <!-- Start Sort Select Option -->
                                         <div class="sort-select-list" style="position:relative;left:0px;" >
@@ -93,7 +93,7 @@
                     </div> <!-- End Tab Wrapper -->
                     <br>
                     {% if productsPager is not empty %}
-                        <div class="tab-pane active show sort-layout-single" id="layout-3-grid" style="margin-left:2%;" >
+                        <div class="tab-pane active show sort-layout-single margin-left-page-media" id="layout-3-grid"  >
                         {{ pagerfanta(productsPager) }}
                         </div>
                     {% endif %}
@@ -112,7 +112,7 @@
         * Price Slider
         ***********************************************/
         $(document).ready(function(){
-            let searchedWord = {% if searchedWord is defined %}'&searchedWord=' + '{{searchedWord}}'{% else %}''{% endif %};
+            let searchedWord = {% if searchParam is defined %}{% if searchParam.searched is defined %}'&searchedWord=' + '{{searchParam.searched}}'{% elseif searchParam.search is defined %}'&search=' + '{{searchParam.search}}'{% else %}''{% endif %}{% else %}''{% endif %};
             $( "#slider-range" ).slider({
                 range: true,
                 min: {{priceRangeMin |round(0, 'floor') | number_format(0, '.', ',')}},
@@ -149,6 +149,18 @@
                 }else{
                     var newLocation = newUrl + page + "minPrice=" + $( "#slider-range" ).slider( "values", 0 ) + "&maxPrice=" + $( "#slider-range" ).slider( "values", 1 ) + "&priceOrder="+priceOrder + searchedWord;
                     window.location = newLocation;
+                }
+            });
+            Array.prototype.forEach.call($('.pagination'),function(item){
+                let children = item.children;
+                if (children.length > 7) {
+                    for (let i=4;i<children.length-2;i++) {
+                        let pageItem = children.item(i);
+                        if (!$(pageItem).hasClass('disabled') && !$(pageItem).hasClass('active')) {
+                            item.removeChild(pageItem);
+                            i--;
+                        }
+                    }
                 }
             });
         });

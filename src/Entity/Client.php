@@ -7,10 +7,23 @@ use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=ClientRepository::class)
- * @ApiResource()
+ * @ApiResource(
+ * attributes={"pagination_items_per_page"=1000000},
+ * collectionOperations={
+ *         "post"={"access_control"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add clients."},
+ *          "get" = { "security" = "is_granted('ROLE_ADMIN')" },
+ *     },
+ * itemOperations={
+ *         "put" ={"access_control"="is_granted('ROLE_ADMIN')", "access_control_message"="Only admins can add clients."},
+ *          "get" = { "security" = "is_granted('ROLE_ADMIN')" },
+ *     },
+ *     normalizationContext={"groups"={"user:read"}},
+ *     denormalizationContext={"groups"={"user:write"}},
+ * )
  */
 class Client
 {
@@ -23,21 +36,25 @@ class Client
 
     /**
      * @ORM\Column(type="string", length=125)
+     * @Groups({"user:read", "user:write"})
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="string", length=125)
+     * @Groups({"user:read", "user:write"})
      */
     private $lastname;
 
     /**
      * @ORM\Column(type="string", length=8, nullable=true)
+     * @Groups({"user:read", "user:write"})
      */
     private $phone;
 
     /**
      * @ORM\OneToMany(targetEntity=Command::class, mappedBy="client")
+     * @Groups({"user:write"})
      */
     private $commands;
 
