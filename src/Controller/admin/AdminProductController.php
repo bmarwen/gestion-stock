@@ -20,25 +20,62 @@ use Symfony\Component\Validator\ConstraintViolation;
  */
 class AdminProductController extends AbstractController
 {
+    private const NUMBER_OF_ITEMS_PER_PAGE = 25;// Number of items per page
+    private const SORTED_FIELDS = ['updatedAt', 'expirationDate', 'purchacePriceUnHt'];
+
     /**
      * @Route("/", name="admin.product_index", methods={"GET"})
      */
     public function index(Request $request, ProductRepository $productRepository, PaginatorInterface $paginator): Response
     {
         $searchedValue = $request->query->get('searchedValue') ?? null;
+        $sortedValue = $request->query->get('dataSortSelector') ?? null;
+
+        // Get the page number from the request
+        $page = $request->query->getInt('page', 1);
+
+        // Calculate the offset to retrieve the appropriate range of products
+        $offset = ($page - 1) * self::NUMBER_OF_ITEMS_PER_PAGE;
+
+        // Create a query builder for the Product entity
+        $queryBuilder = $productRepository->createQueryBuilder('p');
+
+        // Determine the sorting field and order based on the selected value
+        if ($sortedValue !== null) {
+            $sortParts = explode('_', $sortedValue);
+            $sortField = $sortParts[0];
+            $sortOrder = count($sortParts) >= 2 ? (strtoupper($sortParts[1]) === 'ASC' ? 'ASC' : 'DESC') : 'DESC';
+            if (in_array($sortField, self::SORTED_FIELDS)) {
+                $queryBuilder->orderBy('p.' . $sortField, $sortOrder);
+            }
+        }
 
         // Retrieve all products or filtered products based on your search criteria
-        $query = empty($searchedValue) ? $productRepository->findAll() : $productRepository->findByNameOrCode($searchedValue);
+        if (!empty($searchedValue)) {
+            $queryBuilder
+                ->where('p.name LIKE :searchedValue')
+                ->orWhere('p.code LIKE :searchedValue')
+                ->setParameter('searchedValue', '%' . $searchedValue . '%');
+        }
+
+        // Limit the query to retrieve only the necessary range of products
+        $queryBuilder
+            ->setMaxResults(self::NUMBER_OF_ITEMS_PER_PAGE)
+            ->setFirstResult($offset);
+
+        // Get the final query from the query builder
+        $query = $queryBuilder->getQuery();
 
         // Paginate the query
         $pagination = $paginator->paginate(
             $query, // Query
-            $request->query->getInt('page', 1), // Page number
-            25 // Number of items per page
+            $page, // Page number
+            self::NUMBER_OF_ITEMS_PER_PAGE // Number of items per page
         );
 
         return $this->render('product/index.html.twig', [
             'pagination' => $pagination,
+            'sortedValue' => $sortedValue
         ]);
     }
 

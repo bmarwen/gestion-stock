@@ -6,10 +6,10 @@
 
     <div class="mt-4 mb-4">
         <div class="row justify-content-between">
-            <div class="col-md-4">
+            <div class="col-md-4 mt-md-0 mt-4">
                 <a class="btn btn-primary" href="{{ path('admin.product_new') }}">Ajouter un produit</a>
             </div>
-            <div class="col-md-6 text-md-right  mt-md-0 mt-4">
+            <div class="col-md-4 text-md-right  mt-md-0 mt-4">
                 <form action="" method="GET" class="form-inline">
                     <div class="form-group " style="margin-right: 5px;">
                         <label for="searchedValue" class="sr-only">Rechercher:</label>
@@ -18,11 +18,30 @@
                     <button type="submit" class="btn btn-primary">Rechercher</button>
                 </form>
             </div>
+            <div class="col-md-4 text-md-right mt-md-0 mt-4">
+                <form action="" method="GET" class="form-inline">
+                    <div class="form-group" style="margin-right: 5px;">
+                        <label for="dataSortSelector" class="sr-only">Trier par colonne:</label>
+                        <select id="dataSortSelector" name="dataSortSelector" class="form-control">
+                            {% if sortedValue is null %}<option value="" {{ sortedValue is null ? 'selected' : '' }}>Choisir une option</option>{%  endif %}
+                            <option value="updatedAt_asc" {{ sortedValue == 'updatedAt_asc' ? 'selected' : '' }}>Modifié le (ascendant)</option>
+                            <option value="updatedAt_desc" {{ sortedValue == 'updatedAt_desc' ? 'selected' : '' }}>Modifié le (descendant)</option>
+                            <option value="expirationDate_asc" {{ sortedValue == 'expirationDate_asc' ? 'selected' : '' }}>Date de péremption (ascendant)</option>
+                            <option value="expirationDate_desc" {{ sortedValue == 'expirationDate_desc' ? 'selected' : '' }}>Date de péremption (descendant)</option>
+                            <option value="purchacePriceUnHt_asc" {{ sortedValue == 'purchacePriceUnHt_asc' ? 'selected' : '' }}>Prix unitaire (ascendant)</option>
+                            <option value="purchacePriceUnHt_desc" {{ sortedValue == 'purchacePriceUnHt_desc' ? 'selected' : '' }}>Prix unitaire (descendant)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Trier</button>
+                </form>
+            </div>
+
         </div>
     </div>
     <div class="pagination">
         {{ knp_pagination_render(pagination) }}
     </div>
+    <br>
     <table class="table" id="table">
         <thead>
             <tr>
@@ -86,9 +105,10 @@
             $(document).ready(function () {
                 $('#table').DataTable({
                     "paging": false,
-                    "order": [[ 1, "asc" ]],
                     "lengthChange": false,
-                    "info": false
+                    "info": false,
+                    "searching": false,
+                    "ordering": false,
                 });
             } );
         </script>
